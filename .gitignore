@@ -4,6 +4,12 @@ references/gearmulator/
 references/edisyn/
 references/mwsd/
 
+# Waldorf reference PDFs and derived text — kept locally only, NOT redistributed.
+# See docs/spec/README.md for the public Waldorf download URL.
+docs/spec/*.pdf
+docs/spec/*.txt
+references/**/*.pdf
+
 # macOS junk
 .DS_Store
 

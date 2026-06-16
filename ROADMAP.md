@@ -4,6 +4,10 @@
 
 Living execution document. The architectural reference is `mw2xt_editor_development_plan.md`; this doc is the ordered list of milestones I actually work from, plus the open decisions that gate them.
 
+**Related specifications** in [`docs/spec/`](docs/spec/):
+- [`editor-requirements.md`](docs/spec/editor-requirements.md) — per-milestone acceptance criteria (the "definition of done")
+- [`sysex-protocol.md`](docs/spec/sysex-protocol.md) — our authoritative SysEx protocol reference, distilled from the Waldorf docs and cross-checked against Edisyn
+
 ---
 
 ## 1. How to read this doc
@@ -35,7 +39,7 @@ Convention: **Blocks** = milestones that cannot start until this decision is res
 | D-01 | gearmulator component dependency closure (PatchDB, patch-manager UI, skin, MIDI Learn) — per component: copy clean, copy+shim, or reimplement | Open | M1.1, M2.1, M6.1 | Investigated in M0.2. Review gap #1. **Early finding (from M0.1):** skin system has migrated from JSON to RmlUi (RML/RCSS via `juceRmlUi`); patch-manager has two implementations (original + RmlUi). See `references/gearmulator.md`. |
 | D-02 | CLAP in MVP or deferred? Requires `clap-juce-extensions` submodule if in. | Open | M1.1 | Decided at start of M1.1. Review gap #4. |
 | D-03 | Xenia SysEx timing fidelity — does the 100ms SNDP rate limiter need hardware-only validation? | Open | — | Investigated in M1.3 (the validation step). Review gap #6. |
-| D-04 | IDATA byte count vs spec §3.3 (plan says 28; verify before freezing `InstrumentData` struct) | Open | — | Investigated in M1.2 before struct is frozen. Review gap #7. |
+| D-04 | IDATA byte count vs spec §3.3 (plan says 28; verify before freezing `InstrumentData` struct) | **Resolved (2026-06-16)** | — | Confirmed 28 bytes. Waldorf §3.3 enumerates indices 0–27; §2.22 MULD layout has each IDATA occupy 28 bytes (offsets 39–66, 67–94, …). Recorded in [`sysex-protocol.md` §IDATA](docs/spec/sysex-protocol.md). |
 | D-05 | MidiKraft-librarian standalone buildability | Open | M1.1 | Investigated in M0.2. Review gap #3. |
 | D-06 | Exact filename + completeness of `parameterDescriptions_*.json` in gearmulator | Open | M1.2 | Investigated in M0.3. |
 
@@ -447,3 +451,4 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 |---|---|
 | 2026-06-15 | Initial roadmap created. Sequenced milestones M0.1 → M6.7 across Phases 0–6. Six open decisions logged (D-01 … D-06). |
 | 2026-06-15 | M0.1 completed. References cloned (gearmulator @26cec55, edisyn @49f13d5, mwsd @391d99b). D-06 partially resolved (`parameterDescriptions_xt.json` located; completeness spot-check is M0.3). D-01 updated with skin/patch-manager findings. |
+| 2026-06-16 | Added `docs/spec/`: editor requirements (per-milestone acceptance criteria), authoritative SysEx protocol spec (distilled from Waldorf PDFs, cross-checked against Edisyn), and per-spec README. Waldorf PDFs kept locally only (gitignored). D-04 (IDATA byte count) resolved as 28. |
