@@ -154,7 +154,7 @@ The two are physically the same plumbing — IAC Bus + Xenia plugin. The differe
 **Status:** ✅ Completed 2026-06-16.
 
 **Functional requirements:**
-- [x] Fresh JUCE CMake project builds Standalone, VST3, and AU on macOS (CLAP deferred per D-02). Verified via `codesign -dv` and bundle inspection; manual DAW open is the remaining step before M1.2 ships.
+- [x] Fresh JUCE CMake project builds Standalone, VST3, and AU on macOS (CLAP deferred per D-02). Verified via `codesign -dv`, AU `Info.plist` inspection, and **`auval -v aumi MwXT RPAu` full validation pass** (Cocoa view, class info, host callbacks, parameter info — all PASS).
 - [x] Submodules in place: JUCE @ 8.0.13 (`7c9d3783`), sqlite_orm @ v1.9.1 (`5f1a2ce8`). CLAP, MidiKraft-librarian, juce-widgets all dropped per D-02 / D-05 / M0.2 spike.
 - [x] Source tree matches `mw2xt_editor_development_plan.md` §7: `source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`, `references/`, `source/mw2xtUI/skins/xtDefault/` with copied Xenia assets.
 - [x] `LICENSE` (canonical AGPL-3.0 text from gnu.org) and `ATTRIBUTIONS.md` (with per-file entries for the skin assets) present at repo root.
