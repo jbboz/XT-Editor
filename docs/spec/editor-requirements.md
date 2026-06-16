@@ -24,6 +24,71 @@ These apply across the whole editor regardless of milestone.
 
 ---
 
+## Testing strategy: Xenia + real hardware
+
+The editor is developed and tested against **two parallel targets**: gearmulator's **Xenia** (the Microwave II/XT software emulation) and a **real XT** (or MW II / XTk) over MIDI. They serve different purposes; the project relies on both.
+
+### Why we use Xenia
+
+- **Fast iteration.** Xenia is always on, headless-capable, and survives editor rebuilds without unplugging anything. The real XT requires power, MIDI cables, and physical attention; using only the XT would gate every test on physical workflow.
+- **Cross-checked reference implementation.** Xenia has already corrected several Waldorf-doc typos through hardware testing (MULP IDM = `21h`, GLBR = `04h`, the WCTD section title bug). When our spec, Edisyn, and Xenia all agree, that's three independent confirmations.
+- **Independence from hardware availability.** Anyone working on the project later — including future maintainers and contributors — can run the full editor against Xenia without owning the synth.
+
+### Dual-target posture
+
+- **Xenia is the primary development-loop target** for Phase 1+ unless a milestone explicitly requires hardware (see "Trust boundary" below). Day-to-day work iterates against Xenia.
+- **Real XT is the sign-off target at every gate** (M1.2 protocol, M1.3 device, M1.5 vertical slice, M2.3 bulk receive/send, etc.). A gate does not pass on Xenia alone.
+- **CI runs against Xenia only.** Real-hardware verification is a manual step at gate boundaries, not gated on every commit.
+
+### Setup mechanics
+
+- **macOS IAC Bus** (Audio MIDI Setup → MIDI Studio → IAC Driver → enable Device 1) provides a virtual MIDI port pair that connects two apps on the same machine.
+- **Xenia runs as a plugin** (Standalone, VST3, AU, or CLAP — built per gearmulator's `_XENIA` CMake flag). Any host works; Reaper or AU Lab are convenient for unattended dev work.
+- **Routing:** Editor MIDI Out → IAC Bus 1 → Xenia MIDI In; Xenia MIDI Out → IAC Bus 1 → Editor MIDI In. The editor selects the IAC port through JUCE's `MidiOutput::openDevice` exactly the same way it selects a real USB-MIDI port.
+- **Device ID handshake works transparently.** Xenia responds to Universal Device Inquiry like real hardware; autodetect (M1.3) identifies it as a Microwave II family member.
+- **Real-XT setup** is whatever USB-MIDI or DIN-MIDI interface the developer has. The editor's device picker treats both identically.
+
+### Trust boundary — what's safe to gate on Xenia alone vs requires real XT
+
+| Concern | Xenia alone? |
+|---|---|
+| SysEx frame correctness (every IDM, byte ordering, checksums) | ✓ Sufficient |
+| Parameter round-trip (SNDP send → SNDD receive → values match) | ✓ Sufficient |
+| Codec round-trip (WDATA XOR-flip nibble, WCTDATA 4-nibble) | ✓ Sufficient |
+| Universal Device Inquiry response parsing | ✓ Sufficient |
+| Edit-buffer fetch and bulk dump message orchestration | ✓ Sufficient for protocol shape; gate on real XT for timing |
+| **SNDP rate limiter behavior (100 ms coalescing)** | **✗ Real XT required** (see D-03). The real firmware is timing-sensitive; Xenia may accept floods that the XT would not. |
+| Audible output / sound quality | ✗ Out of scope for this editor (we don't render audio); confirm subjectively on real XT |
+| Hardware-knob CC arrival behavior at sub-100 ms rates | ✗ Real XT required |
+| MW2 vs XT parameter differences (SDATA 51, 76; GDATA 28) | ✗ Real XT of the relevant family required |
+| Filter 1 Type indices 10–12 reality (Notch24/Notch12/BandStop12) | ✗ Real XT required — these may be Xenia-only extensions |
+| RMTP front-panel button simulation | ✗ Real XT required (Xenia has no front panel to verify against) |
+| Bulk dump timing (256-patch SNDD takes 30+ seconds on hardware) | ✗ Real XT required to characterize the timing curve |
+
+This table is the source of truth for "do I need hardware for this?" — extend it as we discover new categories during M1.3.
+
+### Where Xenia shows up across the milestones
+
+| Milestone | Xenia use |
+|---|---|
+| M1.3 (HardwareMidiDevice + dual test harness) | First milestone to stand up the IAC loopback. Every message type validated byte-identical to Edisyn on the IAC bus. D-03 (timing fidelity) resolved here. |
+| M1.5 (OSC + FILTER tabs vertical slice) | UI ↔ SysEx round-trip validated on Xenia first, then real XT. Filter 1 Type 10–12 first-encountered question opens here. |
+| M1.6 (remaining tabs) | Per-tab acceptance against Xenia for iterative dev; gate-sign-off on real XT. |
+| M2.x (Patch library) | DB schema, browser interactions, and patch upload/download flows exercised against Xenia. Bulk dump timing characterized on real XT. |
+| M3.x (Wavetable & waveform editor) | WAVR/WAVD round-trips against Xenia; user-wave audibility check on real XT. |
+| M4 (Mod matrix) | Routing changes round-trip against Xenia. |
+| M5 (Exploration engine) | Mutation/morph/hill-climb sound auditioning against Xenia for fast iteration; final voicing judged on real XT. |
+| M6.6 (Xenia compatibility) | Same routing as our internal harness, but documented as an **end-user feature**. The same plumbing that we use for testing is the user's option for hardware-free use. |
+
+### Xenia for testing vs. Xenia for end users (M6.6)
+
+The two are physically the same plumbing — IAC Bus + Xenia plugin. The difference is intent and what we document:
+
+- **Internal testing posture (this section):** how the project is developed. Not exposed in the UI, but the editor's regular MIDI device picker happens to allow it.
+- **M6.6 end-user feature:** a documented setup path so users without hardware can use the editor against Xenia as their sound engine. Adds an in-app help link and a setup walkthrough. Does not add new code paths beyond M1.3's MIDI device selection.
+
+---
+
 # Phase 0 — Reference & Decoupling Spike
 
 ## M0.1 — Acquire reference material
@@ -145,10 +210,13 @@ These apply across the whole editor regardless of milestone.
 - [ ] DISD parses 80 ASCII chars (LCD upper+lower row) and LED bitmask per Waldorf §2.62; exposes both as observable state
 
 **Functional requirements — dual harness:**
-- [ ] Editor can be configured to talk to Xenia (via IAC bus loopback) or real XT hardware via JUCE MIDI device selection
+
+The dual-target posture (Xenia + real XT), setup mechanics, and trust boundary are defined in the [Testing strategy](#testing-strategy-xenia--real-hardware) section above and the [`docs/xenia-setup.md`](../xenia-setup.md) setup guide. M1.3 is where that harness first comes online; below are the M1.3-specific acceptance checks.
+
+- [ ] Editor's MIDI device picker exposes both IAC ports (Xenia) and connected USB-MIDI devices (real XT); selecting either works without code-path differences
 - [ ] All message types verified byte-identical to Edisyn output on the IAC bus (MIDI monitor confirmation)
-- [ ] Autodetect verified against real XT (returns correct device family/member)
-- [ ] 100 ms SNDP coalescing verified against physical XT firmware (resolves D-03 — record whether Xenia is faithful enough for future timing work)
+- [ ] Autodetect verified against real XT (returns correct device family/member code)
+- [ ] 100 ms SNDP coalescing verified against physical XT firmware (resolves D-03 — record whether Xenia is faithful enough for future timing work, per the trust-boundary table)
 
 **Non-functional requirements:**
 - NFR-M1.3-1: No MIDI I/O blocks the audio thread; all SysEx callbacks marshal to message thread before touching UI

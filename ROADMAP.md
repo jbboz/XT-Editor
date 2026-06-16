@@ -5,8 +5,9 @@
 Living execution document. The architectural reference is `mw2xt_editor_development_plan.md`; this doc is the ordered list of milestones I actually work from, plus the open decisions that gate them.
 
 **Related specifications** in [`docs/spec/`](docs/spec/):
-- [`editor-requirements.md`](docs/spec/editor-requirements.md) — per-milestone acceptance criteria (the "definition of done")
+- [`editor-requirements.md`](docs/spec/editor-requirements.md) — per-milestone acceptance criteria (the "definition of done"); also contains the **[Testing strategy: Xenia + real hardware](docs/spec/editor-requirements.md#testing-strategy-xenia--real-hardware)** section
 - [`sysex-protocol.md`](docs/spec/sysex-protocol.md) — our authoritative SysEx protocol reference, distilled from the Waldorf docs and cross-checked against Edisyn
+- [`xenia-setup.md`](docs/xenia-setup.md) — concrete setup guide for the Xenia + IAC Bus development/test harness
 
 ---
 
@@ -129,7 +130,7 @@ Goal: a working single-patch editor with reliable hardware communication, full s
 #### M1.3 — HardwareMidiDevice + dual test harness *(gate)*
 **Effort:** L · **Depends on:** M1.2 · **Decisions:** D-03
 
-**Scope:** `HardwareMidiDevice`: Universal Device Inquiry autodetect (from mwsd), SNDP send with rate limiter (100ms coalescing), SNDR/SNDD via MidiKraft-librarian, DISD parser. Stand up Xenia-over-IAC loopback as fast-iteration target alongside real-hardware testing.
+**Scope:** `HardwareMidiDevice`: Universal Device Inquiry autodetect (from mwsd), SNDP send with rate limiter (100ms coalescing), SNDR/SNDD via our own state machine (D-05), DISD parser. Stand up the dual test harness per [Testing strategy: Xenia + real hardware](docs/spec/editor-requirements.md#testing-strategy-xenia--real-hardware) — Xenia-over-IAC for fast iteration, real XT for sign-off; setup details in [`docs/xenia-setup.md`](docs/xenia-setup.md).
 
 **Exit criteria:**
 - [ ] Every message type (SNDP/SNDR/SNDD/MULx/GLBx/WAVx/WCTx/DISx/RMTP/MODx) frames byte-identical to Edisyn on the IAC bus (MIDI monitor verified)
@@ -463,4 +464,5 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 | 2026-06-16 | Added `docs/spec/`: editor requirements (per-milestone acceptance criteria), authoritative SysEx protocol spec (distilled from Waldorf PDFs, cross-checked against Edisyn), and per-spec README. Waldorf PDFs kept locally only (gitignored). D-04 (IDATA byte count) resolved as 28. |
 | 2026-06-16 | M0.2 decoupling spike completed. D-01 resolved: patchdb = copy+shim, patch-manager UI = reimplement (both variants mutually intertwined, both require juceRmlUi/RmlUi/Lua stack), skin = reimplement using Xenia PNG assets directly, MIDI Learn core = copy clean, MIDI Learn UI = reimplement. D-05 resolved: MidiKraft-librarian not standalone-buildable (archived, requires juce-utils + midikraft-base + 9 capability interfaces); writing our own state machine in M2.3. ATTRIBUTIONS.md draft created. Milestone scope updates: M1.1 effort raised M→L (skin in-house now), M2.2 raised L→XL (browser UI reimplement, split on start), M1.1 submodule list trimmed (no MidiKraft-librarian, no juce-widgets). |
 | 2026-06-16 | D-02 resolved: defer CLAP. M1.1 ships Standalone + VST3 + AU only; CLAP can be added in Phase 6 polish. `clap-juce-extensions` not added as a submodule. |
+| 2026-06-16 | Docs additions: `README.md` (project front page), `docs/xenia-setup.md` (IAC Bus + Xenia setup guide), and a new "Testing strategy: Xenia + real hardware" section in `editor-requirements.md` (consolidates the dual-target posture, trust boundary, and milestone-by-milestone Xenia use). M1.3 scope simplified to point at the new section instead of repeating the intent. |
 | 2026-06-16 | M0.3 completed. D-06 resolved: `parameterDescriptions_xt.json` is 2227-line JSONC (`//` comments — needs tolerant parser), 229 unique indices covering 0–255, all 27 SDATA omissions match Waldorf-reserved slots. Bonus: the JSON is a unified table covering SDATA + MDATA + IDATA via a `page` field, with `valuelists` / `midipackets` / `controllerMap` top-level sections (richer than dev plan assumed). One open question logged in `sysex-protocol.md` (Filter 1 Type 0–12 in JSON vs 0–9 in Waldorf §3.15). **Phase 0 complete; next is M1.1 project scaffold.** |
