@@ -87,12 +87,10 @@ These apply across the whole editor regardless of milestone.
 ## M1.1 — Project scaffold
 
 **Functional requirements:**
-- [ ] Fresh JUCE CMake project builds an empty Standalone, VST3, and AU plugin on macOS
-- [ ] CLAP target conditional on D-02 outcome; if included, `clap-juce-extensions` submodule added and CLAP plugin also builds empty
-- [ ] Submodules in place: JUCE, sqlite_orm, MidiKraft-librarian, juce-widgets
+- [ ] Fresh JUCE CMake project builds an empty Standalone, VST3, and AU plugin on macOS (CLAP deferred per D-02)
+- [ ] Submodules in place: JUCE, sqlite_orm (CLAP, MidiKraft-librarian, juce-widgets all dropped per D-02 / D-05 / M0.2 spike)
 - [ ] Source tree matches `mw2xt_editor_development_plan.md` §7: `source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`, `references/`, default-skin directory placeholder
 - [ ] `LICENSE` (AGPL-3.0) and `ATTRIBUTIONS.md` present with provenance from M0.2 spike
-- [ ] D-02 marked Resolved
 
 **Non-functional requirements:**
 - NFR-M1.1-1: Empty plugin opens in at least one DAW (e.g., Reaper or Logic) without crashing or printing errors.

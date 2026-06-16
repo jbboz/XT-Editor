@@ -37,7 +37,7 @@ Convention: **Blocks** = milestones that cannot start until this decision is res
 | ID | Decision | Status | Blocks | Notes |
 |---|---|---|---|---|
 | D-01 | gearmulator component dependency closure (PatchDB, patch-manager UI, skin, MIDI Learn) — per component: copy clean, copy+shim, or reimplement | **Resolved (2026-06-16)** | M1.1, M2.1, M6.1 | Investigated in M0.2. Classifications: **patchdb** = copy + shim; **patch-manager UI (both variants)** = reimplement (mutually intertwined, both require juceRmlUi + RmlUi + Lua + custom renderers); **skin system** = reimplement using Xenia PNG assets directly under JUCE LookAndFeel; **MIDI Learn core** = copy clean; **MIDI Learn UI** = reimplement. See [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md) for full per-component rationale. |
-| D-02 | CLAP in MVP or deferred? Requires `clap-juce-extensions` submodule if in. | Open | M1.1 | Decided at start of M1.1. Review gap #4. |
+| D-02 | CLAP in MVP or deferred? Requires `clap-juce-extensions` submodule if in. | **Resolved (2026-06-16): Defer** | — | CLAP is not in the MVP. M1.1 builds Standalone + VST3 + AU only. `clap-juce-extensions` not added as a submodule. CLAP support can be revisited during Phase 6 polish once VST3/AU paths are proven. |
 | D-03 | Xenia SysEx timing fidelity — does the 100ms SNDP rate limiter need hardware-only validation? | Open | — | Investigated in M1.3 (the validation step). Review gap #6. |
 | D-04 | IDATA byte count vs spec §3.3 (plan says 28; verify before freezing `InstrumentData` struct) | **Resolved (2026-06-16)** | — | Confirmed 28 bytes. Waldorf §3.3 enumerates indices 0–27; §2.22 MULD layout has each IDATA occupy 28 bytes (offsets 39–66, 67–94, …). Recorded in [`sysex-protocol.md` §IDATA](docs/spec/sysex-protocol.md). |
 | D-05 | MidiKraft-librarian standalone buildability | **Resolved (2026-06-16)** | M1.1 | Investigated in M0.2. **Not feasible:** repo is archived, requires juce-utils + midikraft-base + nlohmann_json + fmt as deps, and ~9 abstract capability interfaces from midikraft-base to be implemented. **Path forward:** write our own focused SNDR→SNDD state machine in M2.3 (estimated 200–400 lines). See [`references/MidiKraft-librarian.md`](references/MidiKraft-librarian.md). |
@@ -101,16 +101,15 @@ Goal: prove the borrowed-components strategy works before committing to it.
 Goal: a working single-patch editor with reliable hardware communication, full skin system, and every parameter tab functional.
 
 #### M1.1 — Project scaffold
-**Effort:** L (was M; raised after M0.2 spike — skin system is now in-scope work, not a borrow) · **Depends on:** M0.2 · **Decisions:** D-02
+**Effort:** L (was M; raised after M0.2 spike — skin system is now in-scope work, not a borrow) · **Depends on:** M0.2 · **Decisions:** —
 
-**Scope:** Fresh JUCE CMake project. Submodules: JUCE, sqlite_orm, and `clap-juce-extensions` (if D-02 chooses CLAP-in-MVP). **No MidiKraft-librarian submodule** (D-05 resolution). **No juce-widgets submodule** (M2.2 scope is now reimplementation; revisit if specific widgets prove worth borrowing). Create `source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`, `references/`, `source/mw2xtUI/skins/xtDefault/` (scaffold for the Xenia-derived skin assets, to be wired in M1.5). Add AGPL-3.0 `LICENSE` (already drafted: [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md)). Empty Standalone + VST3 + AU (+ CLAP) build target on macOS first.
+**Scope:** Fresh JUCE CMake project. Submodules: JUCE, sqlite_orm. **No CLAP** (D-02 deferred). **No MidiKraft-librarian** (D-05). **No juce-widgets** (M2.2 reimplemented). Create `source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`, `references/`, `source/mw2xtUI/skins/xtDefault/` (scaffold for Xenia-derived skin assets, wired in M1.5). Add AGPL-3.0 `LICENSE`. `ATTRIBUTIONS.md` already drafted (from M0.2). Empty Standalone + VST3 + AU build target on macOS first.
 
 **Exit criteria:**
-- [ ] Empty plugin opens in a DAW (Standalone, VST3, AU; CLAP if in scope)
+- [ ] Empty plugin opens in a DAW: Standalone, VST3, AU (CLAP deferred per D-02)
 - [ ] Cross-platform CMake works on macOS; Windows/Linux deferred to later milestone if needed
 - [ ] `ATTRIBUTIONS.md` (already exists from M0.2 draft) updated with per-file entries as code is copied
 - [ ] Skin asset directory populated with Xenia PNG assets (copied from `references/gearmulator/source/xtJucePlugin/skins/xtDefault/`) under GPL-3.0 attribution
-- [ ] D-02 marked Resolved
 
 #### M1.2 — Protocol layer + unit tests *(gate)*
 **Effort:** L · **Depends on:** M1.1 · **Decisions:** D-04
@@ -463,4 +462,5 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 | 2026-06-15 | M0.1 completed. References cloned (gearmulator @26cec55, edisyn @49f13d5, mwsd @391d99b). D-06 partially resolved (`parameterDescriptions_xt.json` located; completeness spot-check is M0.3). D-01 updated with skin/patch-manager findings. |
 | 2026-06-16 | Added `docs/spec/`: editor requirements (per-milestone acceptance criteria), authoritative SysEx protocol spec (distilled from Waldorf PDFs, cross-checked against Edisyn), and per-spec README. Waldorf PDFs kept locally only (gitignored). D-04 (IDATA byte count) resolved as 28. |
 | 2026-06-16 | M0.2 decoupling spike completed. D-01 resolved: patchdb = copy+shim, patch-manager UI = reimplement (both variants mutually intertwined, both require juceRmlUi/RmlUi/Lua stack), skin = reimplement using Xenia PNG assets directly, MIDI Learn core = copy clean, MIDI Learn UI = reimplement. D-05 resolved: MidiKraft-librarian not standalone-buildable (archived, requires juce-utils + midikraft-base + 9 capability interfaces); writing our own state machine in M2.3. ATTRIBUTIONS.md draft created. Milestone scope updates: M1.1 effort raised M→L (skin in-house now), M2.2 raised L→XL (browser UI reimplement, split on start), M1.1 submodule list trimmed (no MidiKraft-librarian, no juce-widgets). |
+| 2026-06-16 | D-02 resolved: defer CLAP. M1.1 ships Standalone + VST3 + AU only; CLAP can be added in Phase 6 polish. `clap-juce-extensions` not added as a submodule. |
 | 2026-06-16 | M0.3 completed. D-06 resolved: `parameterDescriptions_xt.json` is 2227-line JSONC (`//` comments — needs tolerant parser), 229 unique indices covering 0–255, all 27 SDATA omissions match Waldorf-reserved slots. Bonus: the JSON is a unified table covering SDATA + MDATA + IDATA via a `page` field, with `valuelists` / `midipackets` / `controllerMap` top-level sections (richer than dev plan assumed). One open question logged in `sysex-protocol.md` (Filter 1 Type 0–12 in JSON vs 0–9 in Waldorf §3.15). **Phase 0 complete; next is M1.1 project scaffold.** |
