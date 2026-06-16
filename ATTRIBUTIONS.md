@@ -73,9 +73,9 @@ The spike's findings shift several milestone scopes (recorded in ROADMAP):
 
 ---
 
-## Per-file attribution log (populated during M1.1+)
+## Per-file attribution log
 
-Format for each entry once code is actually copied:
+Format for each entry:
 
 ```
 ### <our path>
@@ -84,4 +84,18 @@ Format for each entry once code is actually copied:
 - Modifications: <summary of edits>
 ```
 
-(No entries yet — code copy begins in M1.1.)
+### source/mw2xtUI/skins/xtDefault/*.png, Digital.ttf, xtDefault.json
+- **Source:** dsp56300/gearmulator @ `26cec55` : `source/xtJucePlugin/skins/xtDefault/`
+- **License:** GPL-3.0 (Xenia skin assets, "XT orange-and-black" aesthetic)
+- **Modifications:** None — files copied verbatim. The upstream `xtDefault.rml`, `xtDefault.rcss`, `xt-waveeditor-defaults.rcss`, and `assets.cmake` are intentionally **not** copied — those are gearmulator's RmlUi-specific bindings; we reimplement the skin engine natively in JUCE per D-01 (see [`ROADMAP.md`](ROADMAP.md)).
+- **Files included (36 total, ~12 MB):**
+  - `xtDefaultBG.png` — main panel background (6.6 MB)
+  - `xt_encoder_ranged.png`, `xt_encoder_ranged_red.png`, `_page0.png` variants — knob filmstrips
+  - `xtknob.png`, `xtknob_small.png`, `xtknob_minus.png`, `xtknob_plus.png` — additional knob bitmaps
+  - `alphadial.png` — alpha-channel encoder bitmap
+  - `xtPageOsc.png`, `xtPageWave.png`, `xtPageMod.png`, `xtPageArp.png`, `xtPageMulti.png`, `xtPagePatchManager.png` — page-button icons
+  - `f1Type6.png`, `f1Type7.png`, `f1Type8.png`, `f1Type9.png`, `f1Type12.png`, `f1TypeUnused.png` — filter-type glyphs
+  - `fxAmpMod.png`, `fxAutoWahLP.png`, `fxChorus.png`, `fxDelay.png`, `fxFlanger2.png`, `fxModDelay.png`, `fxOff.png`, `fxOverdrive.png` — effect-type glyphs
+  - `led.png`, `btWaveEditor.png` — UI element bitmaps
+  - `Digital.ttf` — LCD/display font
+  - `xtDefault.json` — gearmulator's JSON layout file, retained as a reference for layout intent

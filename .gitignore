@@ -19,6 +19,9 @@ references/**/*.pdf
 .vscode/
 *.swp
 
-# Future build outputs (placeholders for M1.1 scaffold)
+# Build outputs
 build/
 cmake-build-*/
+
+# Stray macOS/Xcode artifacts
+esp_jit.log

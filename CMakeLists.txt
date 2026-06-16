@@ -1,0 +1,64 @@
+cmake_minimum_required(VERSION 3.22)
+
+project(mw2xt_editor
+    VERSION 0.1.0
+    DESCRIPTION "Waldorf Microwave II/XT Editor"
+    HOMEPAGE_URL "https://github.com/jbboz/XT-Editor"
+    LANGUAGES C CXX
+)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(APPLE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "macOS deployment target")
+endif()
+
+add_subdirectory(submodules/JUCE)
+
+juce_add_plugin(mw2xtEditor
+    PRODUCT_NAME                "MW2XT Editor"
+    COMPANY_NAME                "Retro Pro Audio"
+    COMPANY_WEBSITE             "https://github.com/jbboz/XT-Editor"
+    BUNDLE_ID                   "com.retroproaudio.mw2xtEditor"
+    PLUGIN_MANUFACTURER_CODE    RPAu
+    PLUGIN_CODE                 MwXT
+    FORMATS                     Standalone VST3 AU
+    IS_SYNTH                    FALSE
+    IS_MIDI_EFFECT              TRUE
+    NEEDS_MIDI_INPUT            TRUE
+    NEEDS_MIDI_OUTPUT           TRUE
+    EDITOR_WANTS_KEYBOARD_FOCUS TRUE
+    AU_MAIN_TYPE                kAudioUnitType_MIDIProcessor
+    VST3_CATEGORIES             "Fx" "Tools"
+    HARDENED_RUNTIME_ENABLED    TRUE
+)
+
+target_sources(mw2xtEditor PRIVATE
+    source/mw2xtPlugin/PluginProcessor.cpp
+    source/mw2xtPlugin/PluginProcessor.h
+    source/mw2xtPlugin/PluginEditor.cpp
+    source/mw2xtPlugin/PluginEditor.h
+)
+
+target_include_directories(mw2xtEditor PRIVATE source)
+
+target_compile_definitions(mw2xtEditor PRIVATE
+    JUCE_WEB_BROWSER=0
+    JUCE_USE_CURL=0
+    JUCE_VST3_CAN_REPLACE_VST2=0
+    JUCE_DISPLAY_SPLASH_SCREEN=0
+)
+
+target_link_libraries(mw2xtEditor
+    PRIVATE
+        juce::juce_audio_processors
+        juce::juce_audio_utils
+        juce::juce_audio_devices
+        juce::juce_gui_extra
+        juce::juce_core
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_warning_flags
+)

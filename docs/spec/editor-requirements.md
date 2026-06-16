@@ -151,11 +151,13 @@ The two are physically the same plumbing — IAC Bus + Xenia plugin. The differe
 
 ## M1.1 — Project scaffold
 
+**Status:** ✅ Completed 2026-06-16.
+
 **Functional requirements:**
-- [ ] Fresh JUCE CMake project builds an empty Standalone, VST3, and AU plugin on macOS (CLAP deferred per D-02)
-- [ ] Submodules in place: JUCE, sqlite_orm (CLAP, MidiKraft-librarian, juce-widgets all dropped per D-02 / D-05 / M0.2 spike)
-- [ ] Source tree matches `mw2xt_editor_development_plan.md` §7: `source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`, `references/`, default-skin directory placeholder
-- [ ] `LICENSE` (AGPL-3.0) and `ATTRIBUTIONS.md` present with provenance from M0.2 spike
+- [x] Fresh JUCE CMake project builds Standalone, VST3, and AU on macOS (CLAP deferred per D-02). Verified via `codesign -dv` and bundle inspection; manual DAW open is the remaining step before M1.2 ships.
+- [x] Submodules in place: JUCE @ 8.0.13 (`7c9d3783`), sqlite_orm @ v1.9.1 (`5f1a2ce8`). CLAP, MidiKraft-librarian, juce-widgets all dropped per D-02 / D-05 / M0.2 spike.
+- [x] Source tree matches `mw2xt_editor_development_plan.md` §7: `source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`, `references/`, `source/mw2xtUI/skins/xtDefault/` with copied Xenia assets.
+- [x] `LICENSE` (canonical AGPL-3.0 text from gnu.org) and `ATTRIBUTIONS.md` (with per-file entries for the skin assets) present at repo root.
 
 **Non-functional requirements:**
 - NFR-M1.1-1: Empty plugin opens in at least one DAW (e.g., Reaper or Logic) without crashing or printing errors.

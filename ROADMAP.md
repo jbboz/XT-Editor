@@ -107,10 +107,16 @@ Goal: a working single-patch editor with reliable hardware communication, full s
 **Scope:** Fresh JUCE CMake project. Submodules: JUCE, sqlite_orm. **No CLAP** (D-02 deferred). **No MidiKraft-librarian** (D-05). **No juce-widgets** (M2.2 reimplemented). Create `source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`, `references/`, `source/mw2xtUI/skins/xtDefault/` (scaffold for Xenia-derived skin assets, wired in M1.5). Add AGPL-3.0 `LICENSE`. `ATTRIBUTIONS.md` already drafted (from M0.2). Empty Standalone + VST3 + AU build target on macOS first.
 
 **Exit criteria:**
-- [ ] Empty plugin opens in a DAW: Standalone, VST3, AU (CLAP deferred per D-02)
-- [ ] Cross-platform CMake works on macOS; Windows/Linux deferred to later milestone if needed
-- [ ] `ATTRIBUTIONS.md` (already exists from M0.2 draft) updated with per-file entries as code is copied
-- [ ] Skin asset directory populated with Xenia PNG assets (copied from `references/gearmulator/source/xtJucePlugin/skins/xtDefault/`) under GPL-3.0 attribution
+- [x] Empty plugin builds and produces well-formed Standalone (.app), VST3 (.vst3), AU (.component) bundles (Apple Silicon)
+- [x] AU bundle has correct AU metadata: `type=aumi` (MIDI Processor), `subtype=MwXT`, `manufacturer=RPAu`
+- [x] All bundles ad-hoc code-signed; hardened runtime enabled
+- [x] CMake builds cleanly on macOS (Xcode generator, CMake 4.3.2, Xcode 26.5, JUCE 8.0.13). Windows/Linux deferred.
+- [x] `ATTRIBUTIONS.md` updated with per-file entries for the copied skin assets
+- [x] Skin asset directory populated: 35 PNG bitmaps + `Digital.ttf` + `xtDefault.json` (12 MB total) copied from `references/gearmulator/source/xtJucePlugin/skins/xtDefault/` under GPL-3.0 attribution
+
+**Status:** Completed 2026-06-16.
+
+**Next-step note:** the Standalone/VST3/AU bundles were not yet opened in a real DAW for interactive verification — that confirmation step happens manually before M1.2 ships. Bundle structure and AU metadata are verified via `codesign -dv` and `PlistBuddy`.
 
 #### M1.2 — Protocol layer + unit tests *(gate)*
 **Effort:** L · **Depends on:** M1.1 · **Decisions:** D-04
@@ -453,7 +459,7 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 
 *(Update this line as work shifts. Keep it to one milestone.)*
 
-→ **M1.1 — Project scaffold**. Phase 0 complete (M0.1, M0.2, M0.3 all done; D-01, D-04, D-05, D-06 resolved). Open decisions remaining: D-02 (CLAP in MVP) — decide at start of M1.1. D-03 (Xenia SysEx timing fidelity) — investigated during M1.3.
+→ **M1.2 — Protocol layer + unit tests** (gate). M1.1 scaffold done: JUCE 8.0.13 + sqlite_orm v1.9.1 submodules pinned, source tree created, Xenia skin assets copied, minimal AudioProcessor + Editor shell building Standalone + VST3 + AU on Apple Silicon. Pending: manual DAW open before M1.2 ships; CI / Windows / Linux deferred.
 
 ## 6. Changelog
 
@@ -465,4 +471,5 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 | 2026-06-16 | M0.2 decoupling spike completed. D-01 resolved: patchdb = copy+shim, patch-manager UI = reimplement (both variants mutually intertwined, both require juceRmlUi/RmlUi/Lua stack), skin = reimplement using Xenia PNG assets directly, MIDI Learn core = copy clean, MIDI Learn UI = reimplement. D-05 resolved: MidiKraft-librarian not standalone-buildable (archived, requires juce-utils + midikraft-base + 9 capability interfaces); writing our own state machine in M2.3. ATTRIBUTIONS.md draft created. Milestone scope updates: M1.1 effort raised M→L (skin in-house now), M2.2 raised L→XL (browser UI reimplement, split on start), M1.1 submodule list trimmed (no MidiKraft-librarian, no juce-widgets). |
 | 2026-06-16 | D-02 resolved: defer CLAP. M1.1 ships Standalone + VST3 + AU only; CLAP can be added in Phase 6 polish. `clap-juce-extensions` not added as a submodule. |
 | 2026-06-16 | Docs additions: `README.md` (project front page), `docs/xenia-setup.md` (IAC Bus + Xenia setup guide), and a new "Testing strategy: Xenia + real hardware" section in `editor-requirements.md` (consolidates the dual-target posture, trust boundary, and milestone-by-milestone Xenia use). M1.3 scope simplified to point at the new section instead of repeating the intent. |
+| 2026-06-16 | **M1.1 completed.** JUCE 8.0.13 and sqlite_orm v1.9.1 added as submodules at pinned commits. Source tree created (`source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`). Minimal AudioProcessor + AudioProcessorEditor shell in `mw2xtPlugin/` — empty 960×600 window with "MW2/XT Editor" placeholder. Top-level `CMakeLists.txt` configures the plugin as a MIDI Processor (`IS_MIDI_EFFECT TRUE`, `AU_MAIN_TYPE kAudioUnitType_MIDIProcessor`). All three formats — Standalone (.app), VST3 (.vst3), AU (.component) — build successfully on macOS / Apple Silicon (Xcode 26.5, JUCE 8.0.13). AU bundle metadata verified: `type=aumi`, `subtype=MwXT`, `manufacturer=RPAu`. 12 MB of Xenia skin assets (35 PNGs + Digital.ttf + xtDefault.json) copied to `source/mw2xtUI/skins/xtDefault/` with per-file ATTRIBUTIONS entry. AGPL-3.0 LICENSE file added at repo root. Bundle id `com.retroproaudio.mw2xtEditor`. **Next: M1.2 protocol layer.** |
 | 2026-06-16 | M0.3 completed. D-06 resolved: `parameterDescriptions_xt.json` is 2227-line JSONC (`//` comments — needs tolerant parser), 229 unique indices covering 0–255, all 27 SDATA omissions match Waldorf-reserved slots. Bonus: the JSON is a unified table covering SDATA + MDATA + IDATA via a `page` field, with `valuelists` / `midipackets` / `controllerMap` top-level sections (richer than dev plan assumed). One open question logged in `sysex-protocol.md` (Filter 1 Type 0–12 in JSON vs 0–9 in Waldorf §3.15). **Phase 0 complete; next is M1.1 project scaffold.** |

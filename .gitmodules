@@ -1,0 +1,6 @@
+[submodule "submodules/sqlite_orm"]
+	path = submodules/sqlite_orm
+	url = https://github.com/fnc12/sqlite_orm.git
+[submodule "submodules/JUCE"]
+	path = submodules/JUCE
+	url = https://github.com/juce-framework/JUCE.git
