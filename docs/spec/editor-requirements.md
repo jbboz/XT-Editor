@@ -40,22 +40,25 @@ These apply across the whole editor regardless of milestone.
 
 ## M0.2 — Decoupling spike *(gate)*
 
+**Status:** ✅ Completed 2026-06-16. Findings in [`../../ATTRIBUTIONS.md`](../../ATTRIBUTIONS.md) and [`../../references/MidiKraft-librarian.md`](../../references/MidiKraft-librarian.md).
+
 **Goal:** know the true cost of borrowing each gearmulator component before scaffolding starts.
 
 **Functional requirements:**
-- [ ] For each gearmulator component — `jucePluginLib/patchdb/`, `jucePluginEditorLib/patchmanager*/`, the RmlUi-based skin system (`juceRmlUi/`), MIDI Learn (woven into `jucePluginLib`) — produce a classification: `copy clean`, `copy + small shim`, or `reimplement`
-- [ ] Classification is recorded in `ATTRIBUTIONS.md` (draft) with the include/dependency closure noted (which other gearmulator units come along)
-- [ ] If `copy + shim`: the shim's public interface is sketched in the notes
-- [ ] If `reimplement`: a new roadmap milestone is appended with rough effort
-- [ ] MidiKraft-librarian standalone build attempted; result (works / needs sibling repos / doesn't build) recorded in `references/MidiKraft-librarian-spike.md`
-- [ ] D-01 and D-05 (decision log) marked Resolved with date
+- [x] For each gearmulator component — `jucePluginLib/patchdb/`, `jucePluginEditorLib/patchmanager*/`, the RmlUi-based skin system (`juceRmlUi/`), MIDI Learn (woven into `jucePluginLib`) — produced a classification: copy clean, copy + small shim, or reimplement
+- [x] Classification recorded in `ATTRIBUTIONS.md` with include/dependency closure
+- [x] Shim approach documented for the copy+shim items (patchdb, MIDI Learn core)
+- [x] Roadmap milestones adjusted for the reimplement items (M1.1, M2.2, M6.1)
+- [x] MidiKraft-librarian standalone build attempted; result recorded in `references/MidiKraft-librarian.md` (not feasible — repo archived, requires 4+ external libs and ~9 abstract capability interfaces)
+- [x] D-01 and D-05 marked Resolved 2026-06-16
 
 **Non-functional requirements:**
-- NFR-M0.2-1: The spike does not modify any borrowed source. Findings only.
+- NFR-M0.2-1: The spike did not modify any borrowed source. ✓
 
-**Open questions to resolve during the spike:**
-- Whether the RmlUi-based skin system can be lifted cleanly, or whether we keep gearmulator's older JSON skin layer for compatibility, or roll our own
-- Whether the original or RmlUi patch-manager is the better starting point
+**Outcomes that fed back into the requirements / roadmap:**
+- The two patch-manager variants (original + RmlUi) are mutually dependent — both require juceRmlUi + RmlUi + Lua + custom renderers. Not separable.
+- The Xenia skin's JSON layout file (`xtDefault.json`) is still present alongside the newer RmlUi assets — we may parse it for layout coordinates when building our own skin layer, or just use it as a reference for layout intent.
+- MIDI Learn separates cleanly into a pure-logic core and an RmlUi-coupled UI; we take the core and reimplement the UI.
 
 ## M0.3 — Confirm `parameterDescriptions` JSON
 

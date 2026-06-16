@@ -7,9 +7,10 @@ Each upstream repo is cloned into `references/<name>/` and gitignored. Provenanc
 To set up a fresh checkout:
 
 ```sh
-git clone https://github.com/dsp56300/gearmulator.git references/gearmulator
-git clone https://github.com/eclab/edisyn.git              references/edisyn
-git clone https://github.com/jeanette-c/mwsd.git           references/mwsd
+git clone https://github.com/dsp56300/gearmulator.git           references/gearmulator
+git clone https://github.com/eclab/edisyn.git                   references/edisyn
+git clone https://github.com/jeanette-c/mwsd.git                references/mwsd
+git clone https://github.com/christofmuc/MidiKraft-librarian.git references/MidiKraft-librarian
 ```
 
 Then `git checkout` the pinned commit hash recorded in each `<name>.md` to match the state this project was developed against.
@@ -33,3 +34,4 @@ Then `git checkout` the pinned commit hash recorded in each `<name>.md` to match
 | `Synth.java` (exploration algorithms) | [edisyn](edisyn.md) | M5.2 |
 | Universal Device Inquiry autodetect | [mwsd](mwsd.md) | M1.3 |
 | DISD parser (LCD + LED) | [mwsd](mwsd.md) | M1.3, M3.6 |
+| Reference patterns for SNDR→SNDD state machine | [MidiKraft-librarian](MidiKraft-librarian.md) | M2.3 (we write our own; library not standalone-buildable) |
