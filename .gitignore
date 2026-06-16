@@ -1,0 +1,17 @@
+# Cloned upstream reference repos — provenance lives in references/<name>.md (tracked).
+# Set up locally with the commands in references/README.md.
+references/gearmulator/
+references/edisyn/
+references/mwsd/
+
+# macOS junk
+.DS_Store
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+
+# Future build outputs (placeholders for M1.1 scaffold)
+build/
+cmake-build-*/

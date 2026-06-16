@@ -32,7 +32,7 @@ Convention: **Blocks** = milestones that cannot start until this decision is res
 
 | ID | Decision | Status | Blocks | Notes |
 |---|---|---|---|---|
-| D-01 | gearmulator component dependency closure (PatchDB, patch-manager UI, skin, MIDI Learn) — per component: copy clean, copy+shim, or reimplement | Open | M1.1, M2.1, M6.1 | Investigated in M0.2. Review gap #1. |
+| D-01 | gearmulator component dependency closure (PatchDB, patch-manager UI, skin, MIDI Learn) — per component: copy clean, copy+shim, or reimplement | Open | M1.1, M2.1, M6.1 | Investigated in M0.2. Review gap #1. **Early finding (from M0.1):** skin system has migrated from JSON to RmlUi (RML/RCSS via `juceRmlUi`); patch-manager has two implementations (original + RmlUi). See `references/gearmulator.md`. |
 | D-02 | CLAP in MVP or deferred? Requires `clap-juce-extensions` submodule if in. | Open | M1.1 | Decided at start of M1.1. Review gap #4. |
 | D-03 | Xenia SysEx timing fidelity — does the 100ms SNDP rate limiter need hardware-only validation? | Open | — | Investigated in M1.3 (the validation step). Review gap #6. |
 | D-04 | IDATA byte count vs spec §3.3 (plan says 28; verify before freezing `InstrumentData` struct) | Open | — | Investigated in M1.2 before struct is frozen. Review gap #7. |
@@ -51,10 +51,12 @@ Goal: prove the borrowed-components strategy works before committing to it.
 **Scope:** Clone read-only into `references/`: gearmulator (Xenia/Microwave sources, parameter JSON, codec, PatchDB, skin, MIDI Learn), Edisyn (`WaldorfMicrowaveXT.java`, `Synth.java`), mwsd (autodetect + DISD parser). Nothing built, nothing compiled.
 
 **Exit criteria:**
-- [ ] All three repos cloned at fixed commits, commit hashes recorded
-- [ ] Per-repo `README.md` in `references/<name>/` noting license and which files matter
-- [ ] Wave/wavetable codec source file located and path noted
-- [ ] Edisyn `WaldorfMicrowaveXT.java` and `Synth.java` located
+- [x] All three repos cloned at fixed commits, commit hashes recorded *(in `references/<name>.md`)*
+- [x] Per-repo notes file (`references/<name>.md`) noting license and which files matter
+- [x] Wave/wavetable codec source file located: `source/xtLib/xtState.cpp` (primary, ~L1050–1112), `xtRomWaves.cpp` (ROM-side)
+- [x] Edisyn `WaldorfMicrowaveXT.java` located at `edisyn/synth/waldorfmicrowavext/`; `Synth.java` at `edisyn/`
+
+**Status:** Completed 2026-06-15.
 
 #### M0.2 — Decoupling spike *(gate)*
 **Effort:** L · **Depends on:** M0.1 · **Decisions:** D-01, D-05
@@ -437,10 +439,11 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 
 *(Update this line as work shifts. Keep it to one milestone.)*
 
-→ Not yet started. Next action: **M0.1 — Acquire reference material**.
+→ **M0.2 — Decoupling spike** (gate). M0.1 complete. Early findings from M0.1 already inform the spike: skin system uses RmlUi now, patch-manager has two implementations.
 
 ## 6. Changelog
 
 | Date | Change |
 |---|---|
 | 2026-06-15 | Initial roadmap created. Sequenced milestones M0.1 → M6.7 across Phases 0–6. Six open decisions logged (D-01 … D-06). |
+| 2026-06-15 | M0.1 completed. References cloned (gearmulator @26cec55, edisyn @49f13d5, mwsd @391d99b). D-06 partially resolved (`parameterDescriptions_xt.json` located; completeness spot-check is M0.3). D-01 updated with skin/patch-manager findings. |
