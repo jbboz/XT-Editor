@@ -62,11 +62,23 @@ These apply across the whole editor regardless of milestone.
 
 ## M0.3 — Confirm `parameterDescriptions` JSON
 
+**Status:** ✅ Completed 2026-06-16. Findings in [`../../references/gearmulator.md`](../../references/gearmulator.md) §"M0.3 findings".
+
 **Functional requirements:**
-- [ ] Filename `source/xtJucePlugin/parameterDescriptions_xt.json` confirmed present and parseable
-- [ ] Coverage spot-check: ≥5 random SDATA indices (one per major section: OSC, WAVE, FILTER, ENV, MOD) have matching JSON entries with name, range, and value-to-text where applicable
-- [ ] Any missing parameters relative to Waldorf §3.1 logged
-- [ ] D-06 marked Resolved
+- [x] Filename `source/xtJucePlugin/parameterDescriptions_xt.json` confirmed (2227 lines). Format is **JSONC** (`//` line comments) — protocol layer must use a tolerant parser or strip comments at build time.
+- [x] Coverage spot-check (10 indices across OSC/WAVE/FILTER/ENV/LFO/MOD/NAME): all present with name, range, and value-to-text mapping
+- [x] 27 SDATA indices missing from JSON — all 27 match Waldorf §3.1 reserved slots exactly
+- [x] D-06 marked Resolved 2026-06-16
+
+**Findings beyond the requirement:**
+- The JSON is a **unified parameter table** covering SDATA + MDATA + IDATA, disambiguated by the `page` field. One source of metadata for all three contexts.
+- Top-level keys include `parameterdescriptiondefaults`, `parameterdescriptions`, `regions`, `valuelists` (50 named value-to-text mappings), `midipackets`, and `controllerMap` — richer than the dev plan assumed.
+- **Open question (deferred to M1.5):** Filter 1 Type in the JSON enumerates 13 values (0–12) vs Waldorf §3.15's 10 (0–9). Indices 10–12 (Notch24, Notch12, BandStop12) might be late firmware additions or Xenia-only extensions — verify on real hardware.
+
+**Implementation note for M1.2:**
+- The protocol layer needs a JSONC-tolerant parser. Two reasonable options:
+  - Use `nlohmann/json` with `parse(..., callback, allow_exceptions, ignore_comments=true)` — JUCE ecosystem-friendly
+  - Strip `//` and `/* */` at build time via CMake `add_custom_command` and parse plain JSON at runtime — simpler, no extra dep
 
 ---
 

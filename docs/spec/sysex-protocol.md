@@ -744,6 +744,11 @@ The four Play Parameter slots (SDATA 58–61) hold an index into this table. The
 | 7 | Dual 12 dB Low/Bandpass parallel | Wave / channel balance |
 | 8 | 12 dB Lowpass FM-Filter | Osc 2 FM amount |
 | 9 | 12 dB Lowpass with Sample & Hold | S&H Rate |
+| 10 | 24 dB Notch — *gearmulator-only?* | TBD |
+| 11 | 12 dB Notch — *gearmulator-only?* | TBD |
+| 12 | 12 dB Band Stop — *gearmulator-only?* | TBD |
+
+**Filter type extension (M0.3 finding):** Indices 10–12 appear in gearmulator's `parameterDescriptions_xt.json` but are *not* documented in Waldorf §3.15 (release 2.16). Either they're late firmware additions or Xenia emulator-only extensions. Verify on real XT during M1.5 — clamp `F1Type` to 0–9 if hardware doesn't recognize them.
 
 #### Filter Type Context
 
@@ -982,6 +987,7 @@ Waldorf §2.82 / §2.83 describe Information request/dump messages used only by 
 
 These are items that need confirmation against real hardware during the M1.2 / M1.3 milestones. They're tracked here, not in ROADMAP, because they affect protocol correctness rather than scheduling.
 
+- [ ] Filter 1 Type indices 10–12 (24 dB Notch / 12 dB Notch / 12 dB Band Stop): real firmware feature or Xenia emulator-only? Cross-check `F1Type` writes to the real XT and observe LCD readout.
 - [ ] MULP `LL = 00h` semantics — instrument 8, error, or ignored?
 - [ ] Filter 1 Special Parameter label-per-type for filter types 0–4 (currently marked "fixed/unused" in §Filter Type Context but not confirmed against the XT LCD)
 - [ ] LFO Sync (SDATA 162/169) values 1 and 2 both display as "on" per Waldorf doc — verify they're not actually subtly different on hardware

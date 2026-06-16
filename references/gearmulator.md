@@ -10,7 +10,7 @@ Low-level emulator collection covering multiple classic synths. The Microwave II
 
 | Need | Path in gearmulator | Notes |
 |---|---|---|
-| Parameter descriptions JSON | `source/xtJucePlugin/parameterDescriptions_xt.json` | **The most important single file.** Resolves D-06. |
+| Parameter descriptions JSON | `source/xtJucePlugin/parameterDescriptions_xt.json` | **The most important single file.** 2227 lines, JSONC format (`//` comments). 451 entries covering 229 unique indices in 0–255 + 50 named value-to-text mappings (`valuelists`). Resolves D-06. See M0.3 findings below. |
 | Wave nibble codec (XOR-flip 0x80) — primary | `source/xtLib/xtState.cpp` (around lines 1050–1112) | Spec comment `"signed char s = Wave[n] ^ 0x80"` lives here. |
 | Wave nibble codec — ROM-side reference | `source/xtLib/xtRomWaves.cpp` | Same XOR-flip pattern applied to ROM wave data. |
 | Xenia skin assets | `source/xtJucePlugin/skins/xtDefault/` | XT orange/black aesthetic. Format has moved to RmlUi (see Notable changes). |
@@ -19,6 +19,31 @@ Low-level emulator collection covering multiple classic synths. The Microwave II
 | Patch Manager (core) | `source/jucePluginEditorLib/patchmanager/` | Original implementation. |
 | Patch Manager (RmlUi) | `source/jucePluginEditorLib/patchmanagerUiRml/` | Newer RmlUi-based UI; coexists with the original. |
 | Device library | `source/xtLib/` | xtDevice/xtMidi/xtState etc. Heavy; we don't link this, we only consult it. |
+
+## M0.3 findings — parameterDescriptions_xt.json
+
+- **Format:** JSONC (JSON-with-comments). Use a tolerant parser (e.g. `nlohmann/json` with the right options, or strip `//` and `/* */` before parsing) at build time / load time. The file is 2227 lines.
+- **Top-level keys:** `parameterdescriptiondefaults`, `parameterdescriptions`, `regions`, `valuelists`, `midipackets`, `controllerMap`. Much richer than the dev plan assumed — covers parameter metadata, named value lists, MIDI packet shapes, and the CC mapping.
+- **Unified parameter table:** `parameterdescriptions` is a flat array of 451 entries covering 229 unique indices spanning 0–255. The same numeric index appears multiple times with different `page` values — this disambiguates SDATA (sound) vs MDATA (multi) vs IDATA (instrument) usage of the same index byte. Names follow a naming convention: `O1Octave` (sound), `MControlZ` (multi), `MI0Pan` (multi instrument 0). This is **better than the dev plan assumed** — one JSON drives metadata for all three data contexts.
+- **Coverage:** 27 SDATA indices are deliberately omitted; all 27 match Waldorf §3.1 "reserved" slots exactly. No real gaps.
+- **`valuelists`:** 50 named value-to-text mappings. Frequently used: `octaves`, `signed`, `offOn`, `pbrange`, `ascii`, `waveType`, `filter1Type`, `modSource`, `modDest`, `keytrack77`, `keytrack128`, `pan`, `panMod`, `midiNote`.
+
+### Notable divergence: Filter 1 Type has 13 values, not 10
+
+Waldorf §3.15 enumerates filter types 0–9 (10 types). The JSON's `filter1Type` value list has 13:
+
+| Idx | JSON label | In Waldorf §3.15? |
+|---|---|---|
+| 0–9 | matches Waldorf exactly (24 dB LP through 12 dB LP S&H) | ✓ |
+| 10 | "24 dB Notch" | ✗ — JSON only |
+| 11 | "12 dB Notch" | ✗ — JSON only |
+| 12 | "12 dB Band Stop" | ✗ — JSON only |
+
+Two possibilities, both worth confirming during M1.5 on real hardware:
+- Late firmware additions (post-2.16 spec) — real XT supports them
+- Xenia-emulator extensions — Xenia accepts them; real XT clamps or behaves undefined
+
+If they're emulator-only, our editor should clamp `F1Type` to 0–9 for real hardware and 0–12 for Xenia. Decision deferred to M1.5 hardware testing.
 
 ## Notable changes since the dev plan was written
 

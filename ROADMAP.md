@@ -41,7 +41,7 @@ Convention: **Blocks** = milestones that cannot start until this decision is res
 | D-03 | Xenia SysEx timing fidelity — does the 100ms SNDP rate limiter need hardware-only validation? | Open | — | Investigated in M1.3 (the validation step). Review gap #6. |
 | D-04 | IDATA byte count vs spec §3.3 (plan says 28; verify before freezing `InstrumentData` struct) | **Resolved (2026-06-16)** | — | Confirmed 28 bytes. Waldorf §3.3 enumerates indices 0–27; §2.22 MULD layout has each IDATA occupy 28 bytes (offsets 39–66, 67–94, …). Recorded in [`sysex-protocol.md` §IDATA](docs/spec/sysex-protocol.md). |
 | D-05 | MidiKraft-librarian standalone buildability | **Resolved (2026-06-16)** | M1.1 | Investigated in M0.2. **Not feasible:** repo is archived, requires juce-utils + midikraft-base + nlohmann_json + fmt as deps, and ~9 abstract capability interfaces from midikraft-base to be implemented. **Path forward:** write our own focused SNDR→SNDD state machine in M2.3 (estimated 200–400 lines). See [`references/MidiKraft-librarian.md`](references/MidiKraft-librarian.md). |
-| D-06 | Exact filename + completeness of `parameterDescriptions_*.json` in gearmulator | Open | M1.2 | Investigated in M0.3. |
+| D-06 | Exact filename + completeness of `parameterDescriptions_*.json` in gearmulator | **Resolved (2026-06-16)** | M1.2 | Investigated in M0.3. Filename: `source/xtJucePlugin/parameterDescriptions_xt.json`. Format: JSONC. 229 unique indices covering 0–255; 27 omissions all match Waldorf §3.1 reserved slots. Bonus: the JSON is a unified table covering SDATA + MDATA + IDATA via `page` field. One follow-up open question (Filter 1 Type indices 10–12 reality-check) tracked in [`docs/spec/sysex-protocol.md` §Open items](docs/spec/sysex-protocol.md). |
 
 ## 4. Milestones
 
@@ -84,10 +84,15 @@ Goal: prove the borrowed-components strategy works before committing to it.
 **Scope:** Verify exact filename, location, and completeness of the gearmulator parameter-description JSON for MW2/XT. This is "the most important single file in the project" — confirm it covers every SDATA/MDATA/IDATA/GDATA index with names, ranges, and value-to-text enumerations.
 
 **Exit criteria:**
-- [ ] Filename and path noted in `references/gearmulator/README.md`
-- [ ] Coverage spot-check: 5 random parameters cross-checked against spec
-- [ ] Any gaps logged as new decisions or accepted with note
-- [ ] D-06 marked Resolved
+- [x] Filename confirmed: `source/xtJucePlugin/parameterDescriptions_xt.json` (2227 lines, JSONC format)
+- [x] Coverage spot-check: 10 parameters across OSC / WAVE / FILTER / ENV / LFO / MOD / NAME all present with names, ranges, and value-to-text mappings
+- [x] No SDATA gaps relative to Waldorf §3.1 (all 27 omissions match Waldorf "reserved" slots)
+- [x] One open question logged: Filter 1 Type indices 10–12 in JSON vs 0–9 in Waldorf — verify on real hardware in M1.5
+- [x] D-06 marked Resolved 2026-06-16
+
+**Bonus findings:** The JSON is a unified table covering SDATA + MDATA + IDATA via a `page` field (better than dev plan assumed). Top-level structure includes `valuelists` (50 named mappings), `midipackets`, and `controllerMap`. See [`references/gearmulator.md`](references/gearmulator.md) §"M0.3 findings".
+
+**Status:** Completed 2026-06-16.
 
 ---
 
@@ -448,7 +453,7 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 
 *(Update this line as work shifts. Keep it to one milestone.)*
 
-→ **M0.3 — Confirm `parameterDescriptions` JSON** (the last Phase 0 item). M0.2 spike complete; classifications recorded in [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md); D-01 and D-05 resolved. After M0.3 → M1.1 (project scaffold).
+→ **M1.1 — Project scaffold**. Phase 0 complete (M0.1, M0.2, M0.3 all done; D-01, D-04, D-05, D-06 resolved). Open decisions remaining: D-02 (CLAP in MVP) — decide at start of M1.1. D-03 (Xenia SysEx timing fidelity) — investigated during M1.3.
 
 ## 6. Changelog
 
@@ -458,3 +463,4 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 | 2026-06-15 | M0.1 completed. References cloned (gearmulator @26cec55, edisyn @49f13d5, mwsd @391d99b). D-06 partially resolved (`parameterDescriptions_xt.json` located; completeness spot-check is M0.3). D-01 updated with skin/patch-manager findings. |
 | 2026-06-16 | Added `docs/spec/`: editor requirements (per-milestone acceptance criteria), authoritative SysEx protocol spec (distilled from Waldorf PDFs, cross-checked against Edisyn), and per-spec README. Waldorf PDFs kept locally only (gitignored). D-04 (IDATA byte count) resolved as 28. |
 | 2026-06-16 | M0.2 decoupling spike completed. D-01 resolved: patchdb = copy+shim, patch-manager UI = reimplement (both variants mutually intertwined, both require juceRmlUi/RmlUi/Lua stack), skin = reimplement using Xenia PNG assets directly, MIDI Learn core = copy clean, MIDI Learn UI = reimplement. D-05 resolved: MidiKraft-librarian not standalone-buildable (archived, requires juce-utils + midikraft-base + 9 capability interfaces); writing our own state machine in M2.3. ATTRIBUTIONS.md draft created. Milestone scope updates: M1.1 effort raised M→L (skin in-house now), M2.2 raised L→XL (browser UI reimplement, split on start), M1.1 submodule list trimmed (no MidiKraft-librarian, no juce-widgets). |
+| 2026-06-16 | M0.3 completed. D-06 resolved: `parameterDescriptions_xt.json` is 2227-line JSONC (`//` comments — needs tolerant parser), 229 unique indices covering 0–255, all 27 SDATA omissions match Waldorf-reserved slots. Bonus: the JSON is a unified table covering SDATA + MDATA + IDATA via a `page` field, with `valuelists` / `midipackets` / `controllerMap` top-level sections (richer than dev plan assumed). One open question logged in `sysex-protocol.md` (Filter 1 Type 0–12 in JSON vs 0–9 in Waldorf §3.15). **Phase 0 complete; next is M1.1 project scaffold.** |
