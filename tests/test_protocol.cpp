@@ -142,5 +142,89 @@ int main() {
         EXPECT_EQ(f[8], 0xF7u);
     });
 
+    // ── Checksum ──────────────────────────────────────────────────────────
+
+    r.add("computeChecksum: basic sum & 0x7F", []() {
+        uint8_t data[] = {0x01, 0x02, 0x03};
+        EXPECT_EQ(mw2xt::computeChecksum(data, 3), 0x06u);
+    });
+
+    r.add("computeChecksum: overflow masks correctly", []() {
+        // 3 * 0x7F = 0x17D; 0x17D & 0x7F = 0x7D
+        uint8_t data[] = {0x7F, 0x7F, 0x7F};
+        EXPECT_EQ(mw2xt::computeChecksum(data, 3), 0x7Du);
+    });
+
+    r.add("checksumValid: 0x7F is universally valid (bypass sentinel)", []() {
+        EXPECT(mw2xt::checksumValid(0x42, 0x7F));
+    });
+
+    r.add("checksumValid: matching checksum is valid", []() {
+        EXPECT(mw2xt::checksumValid(0x42, 0x42));
+    });
+
+    r.add("checksumValid: mismatched checksum is invalid", []() {
+        EXPECT(!mw2xt::checksumValid(0x42, 0x43));
+    });
+
+    // ── SNDD round-trips (≥5 patches) ────────────────────────────────────
+
+    auto makeSound = [](uint8_t fill, uint8_t cutoff, uint8_t oct) {
+        mw2xt::SoundData sd;
+        sd.data.fill(fill & 0x7F);
+        sd[62] = cutoff;  // SDATA index 62 = Filter 1 Cutoff (Waldorf §3.1)
+        sd[1]  = oct;     // SDATA index 1  = Osc 1 Octave
+        return sd;
+    };
+
+    r.add("SNDD round-trip: patch A (fill=0, cutoff=64, oct=2)", [&]() {
+        auto sd = makeSound(0, 64, 2);
+        auto frame = mw2xt::encodeSndd(0x00, 0x20, 0x00, sd);
+        EXPECT_EQ(frame.size(), mw2xt::kSnddFrameSize);
+        auto decoded = mw2xt::decodeSndd(frame);
+        EXPECT(decoded.has_value());
+        EXPECT(*decoded == sd);
+    });
+
+    r.add("SNDD round-trip: patch B (fill=1, cutoff=0, oct=0)", [&]() {
+        auto sd = makeSound(1, 0, 0);
+        EXPECT(*mw2xt::decodeSndd(mw2xt::encodeSndd(0x00, 0x20, 0x00, sd)) == sd);
+    });
+
+    r.add("SNDD round-trip: patch C (fill=0x7F, cutoff=127, oct=5)", [&]() {
+        auto sd = makeSound(0x7F, 127, 5);
+        EXPECT(*mw2xt::decodeSndd(mw2xt::encodeSndd(0x00, 0x20, 0x00, sd)) == sd);
+    });
+
+    r.add("SNDD round-trip: patch D (all zeros)", [&]() {
+        mw2xt::SoundData sd;
+        EXPECT(*mw2xt::decodeSndd(mw2xt::encodeSndd(0x00, 0x00, 0x00, sd)) == sd);
+    });
+
+    r.add("SNDD round-trip: patch E (alternating 0x55/0x2A)", [&]() {
+        mw2xt::SoundData sd;
+        for (size_t i = 0; i < 256; ++i)
+            sd.data[i] = (i % 2 == 0) ? 0x55 : 0x2A;
+        EXPECT(*mw2xt::decodeSndd(mw2xt::encodeSndd(0x00, 0x01, 0x00, sd)) == sd);
+    });
+
+    r.add("SNDD decode: rejects wrong frame size", []() {
+        EXPECT(!mw2xt::decodeSndd(std::vector<uint8_t>(264, 0)).has_value());
+    });
+
+    r.add("SNDD decode: rejects bad checksum", []() {
+        mw2xt::SoundData sd;
+        auto f = mw2xt::encodeSndd(0x00, 0x20, 0x00, sd);
+        f[263] = (f[263] == 0x7E) ? 0x01u : 0x7Eu;  // corrupt (avoid 0x7F bypass)
+        EXPECT(!mw2xt::decodeSndd(f).has_value());
+    });
+
+    r.add("SNDD decode: accepts 0x7F checksum bypass", []() {
+        mw2xt::SoundData sd;
+        auto f = mw2xt::encodeSndd(0x00, 0x20, 0x00, sd);
+        f[263] = 0x7F;
+        EXPECT(mw2xt::decodeSndd(f).has_value());
+    });
+
     return r.run();
 }
