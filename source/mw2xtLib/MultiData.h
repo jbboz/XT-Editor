@@ -10,6 +10,9 @@ struct InstrumentData {
 
     uint8_t& operator[](int i)       { return data[static_cast<size_t>(i)]; }
     uint8_t  operator[](int i) const { return data[static_cast<size_t>(i)]; }
+
+    bool operator==(const InstrumentData& o) const { return data == o.data; }
+    bool operator!=(const InstrumentData& o) const { return data != o.data; }
 };
 static_assert(sizeof(InstrumentData) == 28, "InstrumentData must be exactly 28 bytes");
 

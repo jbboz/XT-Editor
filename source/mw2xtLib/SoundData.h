@@ -16,7 +16,7 @@ struct SoundData {
     // SDATA 240-255: 16-byte patch name, ASCII, space-padded, no null terminator.
     std::string patchName() const {
         std::string s(reinterpret_cast<const char*>(data.data() + 240), 16);
-        auto end = s.find_last_not_of(' ');
+        auto end = s.find_last_not_of(std::string("\x00 ", 2));
         return end == std::string::npos ? "" : s.substr(0, end + 1);
     }
 
