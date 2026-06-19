@@ -15,7 +15,7 @@ Per-milestone acceptance criteria — the "definition of done" for each ROADMAP 
 These apply across the whole editor regardless of milestone.
 
 - **NFR-1 (Thread safety):** No SysEx round-trips on the JUCE message thread. All hardware I/O happens off the UI thread; results are posted back via `MessageManager::callAsync` or equivalent.
-- **NFR-2 (Rate limiting):** Every outbound SNDP/MULP/GLBP path goes through the per-parameter 100ms coalescing queue (see [Waldorf §2.13 + protocol spec](sysex-protocol.md)). Direct sends bypassing the rate limiter are a defect.
+- **NFR-2 (Rate limiting):** The Wave parameter (SDATA 14) goes through a 100 ms throttle-with-trailing-send queue. All other SNDP/MULP/GLBP sends go out immediately with no rate limit. Hardware test (2026-06-19) confirmed no drops for normal parameters at 20 ms intervals; Wave specifically drops at fast rates, matching gearmulator's targeted rate-limit. See [protocol spec rate limiting section](sysex-protocol.md).
 - **NFR-3 (Determinism in tests):** All exploration algorithms (M5.x) accept an explicit RNG seed and produce reproducible output for a given seed.
 - **NFR-4 (Undo for every user edit):** Any parameter change initiated through the UI pushes a single undoable action. Hardware-originated changes (incoming CC/SysEx) do not push to the undo stack.
 - **NFR-5 (Skin failure mode):** If a skin asset fails to load, the editor falls back to the built-in default skin and surfaces a non-modal error toast. The editor never crashes from a malformed skin.
@@ -57,7 +57,7 @@ The editor is developed and tested against **two parallel targets**: gearmulator
 | Codec round-trip (WDATA XOR-flip nibble, WCTDATA 4-nibble) | ✓ Sufficient |
 | Universal Device Inquiry response parsing | ✓ Sufficient |
 | Edit-buffer fetch and bulk dump message orchestration | ✓ Sufficient for protocol shape; gate on real XT for timing |
-| **SNDP rate limiter behavior (100 ms coalescing)** | **✗ Real XT required** (see D-03). The real firmware is timing-sensitive; Xenia may accept floods that the XT would not. |
+| SNDP rate limiter behavior | **Resolved (2026-06-19).** Normal parameters: no rate limiter needed; Xenia sufficient for all SNDP correctness work. Wave parameter: 100 ms throttle required; Xenia accepts floods the XT would not — hardware required to validate Wave-rate changes. |
 | Audible output / sound quality | ✗ Out of scope for this editor (we don't render audio); confirm subjectively on real XT |
 | Hardware-knob CC arrival behavior at sub-100 ms rates | ✗ Real XT required |
 | MW2 vs XT parameter differences (SDATA 51, 76; GDATA 28) | ✗ Real XT of the relevant family required |
@@ -202,7 +202,7 @@ The two are physically the same plumbing — IAC Bus + Xenia plugin. The differe
 - [ ] If no response within configurable timeout (default 500 ms), autodetect returns "no device found" and does not block longer
 
 **Functional requirements — outbound:**
-- [ ] SNDP sends route through the per-parameter coalescing queue with 100 ms window (NFR-2)
+- [ ] Wave parameter (SDATA 14) sends route through the 100 ms throttle-with-trailing-send queue (NFR-2); all other SNDP sends are immediate
 - [ ] SNDR/SNDD bulk dumps route through MidiKraft-librarian's request/response state machine with progress callbacks
 - [ ] All other message types (MUL*, GLB*, WAV*, WCT*, DIS*, RMTP, MOD*) have direct send methods
 
@@ -218,7 +218,7 @@ The dual-target posture (Xenia + real XT), setup mechanics, and trust boundary a
 - [ ] Editor's MIDI device picker exposes both IAC ports (Xenia) and connected USB-MIDI devices (real XT); selecting either works without code-path differences
 - [ ] All message types verified byte-identical to Edisyn output on the IAC bus (MIDI monitor confirmation)
 - [ ] Autodetect verified against real XT (returns correct device family/member code)
-- [ ] 100 ms SNDP coalescing verified against physical XT firmware (resolves D-03 — record whether Xenia is faithful enough for future timing work, per the trust-boundary table)
+- [x] SNDP rate behaviour verified against physical XT firmware — **D-03 resolved 2026-06-19.** Normal parameters: no drops at 20 ms intervals, no rate limiter needed. Wave parameter: visible drops at fast rates, 100 ms throttle required. Xenia is sufficient for all normal SNDP work but not for Wave rate testing.
 
 **Non-functional requirements:**
 - NFR-M1.3-1: No MIDI I/O blocks the audio thread; all SysEx callbacks marshal to message thread before touching UI
@@ -266,7 +266,7 @@ The dual-target posture (Xenia + real XT), setup mechanics, and trust boundary a
 - [ ] A/B compare swap is reflected on both tabs
 
 **Non-functional requirements:**
-- NFR-M1.5-1: UI knob drag at 60 Hz mouse rate produces ≤10 SNDP messages per second per parameter (rate limiter working)
+- NFR-M1.5-1: Wave parameter UI drag produces ≤10 SNDP messages per second (100 ms throttle working); all other parameters send every change immediately
 - NFR-M1.5-2: Filter Type dropdown change does not produce a visible flicker on the Special Param label
 
 ## M1.6 — Remaining editor tabs

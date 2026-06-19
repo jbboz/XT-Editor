@@ -941,12 +941,15 @@ These are catalogued because they will bite anyone reading the Waldorf PDF direc
 
 ### SNDP/MULP/GLBP rate limiting
 
-Per the dev plan and gearmulator's BUG-10134 fix: the XT firmware will be overwhelmed by uncoalesced rapid parameter changes (UI knob drag, DAW automation). Implementation:
+Hardware test result (2026-06-19, real XT): normal continuous parameters (Filter Cutoff, Resonance, Osc Detune) showed no dropped messages at 20 ms intervals or slower. At faster rates the changes blended aurally and visually, but no clear drops. The **Wave parameter** (SDATA 14) showed visible drops at fast rates, consistent with gearmulator's BUG-10134 fix which applies 100 ms rate limiting to Wave only. MonstrumWaveXT uses `panelMidiGlobalDelay = 0` (no rate limiting at all) and works reliably in production, confirming that a blanket rate limiter is not needed.
 
-- One coalescing queue **per parameter index**, not one global queue
-- Within a 100 ms window per parameter, keep only the most recent value; send when the window closes
-- If a different parameter changes during the window, both are sent independently — only intra-parameter spam is coalesced
-- Bypassing the rate limiter is a defect (NFR-2 in [editor-requirements.md](editor-requirements.md))
+**Rate limiting applies only to the Wave parameter (SDATA 14).** All other SNDP, MULP, and GLBP sends go out immediately.
+
+Implementation for Wave:
+
+- One coalescing queue per parameter index — but only wired for the Wave parameter
+- Within a 100 ms window, keep only the most recent value; send when the window closes
+- The mechanism is throttle-with-trailing-send (matches gearmulator): first change fires immediately; subsequent changes within the window are held and send once at the end
 
 ### Parameter index HH byte
 
