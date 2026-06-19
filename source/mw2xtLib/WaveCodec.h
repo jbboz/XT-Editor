@@ -15,8 +15,8 @@ using WaveData = std::array<int8_t, 128>;
 // Adapted from gearmulator source/xtLib/xtState.cpp.
 std::vector<uint8_t> encodeWave(const WaveData& wave);
 
-// Decode 64 nibble-bytes back to a 128-sample WaveData.
+// Decode 128 SysEx nibble-bytes back to a 128-sample WaveData.
 // Reconstructs the mirror half: decoded[127-i] = -decoded[i].
-WaveData decodeWave(const std::vector<uint8_t>& nibbles64);
+WaveData decodeWave(const std::vector<uint8_t>& nibbles128);
 
 } // namespace mw2xt

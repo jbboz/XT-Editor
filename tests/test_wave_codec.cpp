@@ -51,5 +51,22 @@ int main() {
             EXPECT_EQ(int(decoded[127 - i]), -int(decoded[i]));
     });
 
+    r.add("decodeWave: direct nibble input for sample=+1", []() {
+        // sample=+1: byte = 1^0x80 = 0x81; nibbles = [0x08, 0x01]
+        std::vector<uint8_t> nibbles(128, 0u);  // all zeros = sample 0
+        nibbles[0] = 0x08;  // high nibble of sample[0]
+        nibbles[1] = 0x01;  // low nibble of sample[0]
+        auto wave = mw2xt::decodeWave(nibbles);
+        EXPECT_EQ(wave[0],   int8_t(1));
+        EXPECT_EQ(wave[127], int8_t(-1));  // mirror constraint
+    });
+
+    r.add("decodeWave: wrong size returns zero wave gracefully", []() {
+        std::vector<uint8_t> bad(64, 0x08u);
+        auto wave = mw2xt::decodeWave(bad);
+        for (int i = 0; i < 128; ++i)
+            EXPECT_EQ(wave[i], int8_t(0));
+    });
+
     return r.run();
 }
