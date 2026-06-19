@@ -125,12 +125,14 @@ Goal: a working single-patch editor with reliable hardware communication, full s
 **Scope:** `mw2xtLib`: copy wave/wavetable codec verbatim from gearmulator, copy parameter JSON, write `SoundData` / `MultiData` / `GlobalData` structs with Edisyn-sourced clamping ranges. Confirm IDATA byte count (D-04) before freezing `InstrumentData`. Unit tests cover the correctness-critical paths.
 
 **Exit criteria:**
-- [ ] `ctest` green for: SNDP encode/decode (including HH=00h/01h split at index 128)
-- [ ] `ctest` green for: SNDD checksum
-- [ ] `ctest` green for: wave XOR-flip nibble codec (round-trip on known bytes)
-- [ ] `ctest` green for: MULP IDM = 21h
-- [ ] Spot-check: decoded parameter values match Edisyn output for the same SDATA bytes (≥5 patches)
-- [ ] D-04 marked Resolved
+- [x] `ctest` green for: SNDP encode/decode (including HH=00h/01h split at index 128)
+- [x] `ctest` green for: SNDD checksum
+- [x] `ctest` green for: wave XOR-flip nibble codec (round-trip on known bytes)
+- [x] `ctest` green for: MULP IDM = 21h
+- [x] Spot-check: decoded parameter values match Edisyn output for the same SDATA bytes (≥5 patches)
+- [x] D-04 marked Resolved
+
+**Status:** Completed 2026-06-19.
 
 **Why it's a gate:** silent wrong-parameter bugs at the protocol layer poison everything above it.
 
@@ -460,7 +462,7 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 
 *(Update this line as work shifts. Keep it to one milestone.)*
 
-→ **M1.2 — Protocol layer + unit tests** (gate). M1.1 scaffold done: JUCE 8.0.13 + sqlite_orm v1.9.1 submodules pinned, source tree created, Xenia skin assets copied, minimal AudioProcessor + Editor shell building Standalone + VST3 + AU on Apple Silicon. Pending: manual DAW open before M1.2 ships; CI / Windows / Linux deferred.
+→ **M1.3 — HardwareMidiDevice + dual test harness** (gate). M1.2 complete: mw2xtLib builds JUCE-free, ctest green for all M1.2 exit criteria.
 
 ## 6. Changelog
 
@@ -473,5 +475,6 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 | 2026-06-16 | D-02 resolved: defer CLAP. M1.1 ships Standalone + VST3 + AU only; CLAP can be added in Phase 6 polish. `clap-juce-extensions` not added as a submodule. |
 | 2026-06-16 | Docs additions: `README.md` (project front page), `docs/xenia-setup.md` (IAC Bus + Xenia setup guide), and a new "Testing strategy: Xenia + real hardware" section in `editor-requirements.md` (consolidates the dual-target posture, trust boundary, and milestone-by-milestone Xenia use). M1.3 scope simplified to point at the new section instead of repeating the intent. |
 | 2026-06-16 | **M1.1 completed.** JUCE 8.0.13 and sqlite_orm v1.9.1 added as submodules at pinned commits. Source tree created (`source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`). Minimal AudioProcessor + AudioProcessorEditor shell in `mw2xtPlugin/` — empty 960×600 window with "MW2/XT Editor" placeholder. Top-level `CMakeLists.txt` configures the plugin as a MIDI Processor (`IS_MIDI_EFFECT TRUE`, `AU_MAIN_TYPE kAudioUnitType_MIDIProcessor`). All three formats — Standalone (.app), VST3 (.vst3), AU (.component) — build successfully on macOS / Apple Silicon (Xcode 26.5, JUCE 8.0.13). AU bundle metadata verified: `type=aumi`, `subtype=MwXT`, `manufacturer=RPAu`. **`auval -v aumi MwXT RPAu` passes the full validation suite** (Cocoa view, class info, host callbacks, parameter info). 12 MB of Xenia skin assets (35 PNGs + Digital.ttf + xtDefault.json) copied to `source/mw2xtUI/skins/xtDefault/` with per-file ATTRIBUTIONS entry. AGPL-3.0 LICENSE file added at repo root. Bundle id `com.retroproaudio.mw2xtEditor`. **Next: M1.2 protocol layer.** |
+| 2026-06-19 | **M1.2 completed.** mw2xtLib static library (no JUCE): SoundData/MultiData/GlobalData structs (static_assert sizes), all Waldorf SysEx message encoders/decoders (SNDP/SNDD/MULP/MULD/GLBD/GLBP/WAVD/WCTD/DISD and all request types), wave XOR-flip nibble codec (adapted from gearmulator). parameterDescriptions_xt.json copied from reference. CTest green: SNDP HH split, SNDD checksum + 5-patch round-trip, MULP IDM=0x21, wave codec round-trip. **Next: M1.3 HardwareMidiDevice.** |
 | 2026-06-19 | **D-03 resolved.** Hardware test on real XT (`tools/sndp_rate_test.py`): normal parameters show no drops at 20 ms intervals — blanket rate limiter removed. Wave parameter (SDATA 14) shows visible drops at fast rates — 100 ms throttle-with-trailing-send retained for Wave only. Xenia is sufficient for all normal SNDP correctness work but not for Wave rate validation. NFR-2, trust-boundary table, and protocol spec rate-limiting section updated accordingly. |
 | 2026-06-16 | M0.3 completed. D-06 resolved: `parameterDescriptions_xt.json` is 2227-line JSONC (`//` comments — needs tolerant parser), 229 unique indices covering 0–255, all 27 SDATA omissions match Waldorf-reserved slots. Bonus: the JSON is a unified table covering SDATA + MDATA + IDATA via a `page` field, with `valuelists` / `midipackets` / `controllerMap` top-level sections (richer than dev plan assumed). One open question logged in `sysex-protocol.md` (Filter 1 Type 0–12 in JSON vs 0–9 in Waldorf §3.15). **Phase 0 complete; next is M1.1 project scaffold.** |
