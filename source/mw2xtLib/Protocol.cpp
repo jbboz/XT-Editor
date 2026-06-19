@@ -123,6 +123,7 @@ std::optional<GlobalData> decodeGlbd(const std::vector<uint8_t>& f) {
 
 std::vector<uint8_t> encodeWavd(uint8_t deviceId, uint8_t waveHH, uint8_t waveLL,
                                   const std::vector<uint8_t>& nibbles128) {
+    if (nibbles128.size() != 128) return {};
     std::vector<uint8_t> f;
     f.reserve(kWavdFrameSize);
     f.push_back(kSysExBegin);
@@ -155,6 +156,7 @@ std::vector<uint8_t> decodeWavd(const std::vector<uint8_t>& f) {
 
 std::vector<uint8_t> encodeWctd(uint8_t deviceId, uint8_t tableHH, uint8_t tableLL,
                                   const std::vector<uint8_t>& nibbles256) {
+    if (nibbles256.size() != 256) return {};
     return buildDump265(deviceId, kIdmWctd, tableHH, tableLL,
                         nibbles256.data(), nibbles256.size());
 }

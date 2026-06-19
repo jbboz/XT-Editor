@@ -49,6 +49,7 @@ constexpr size_t kSnddFrameSize = 265;
 constexpr size_t kSndrFrameSize = 9;
 constexpr size_t kMulpFrameSize = 9;
 constexpr size_t kMuldFrameSize = 265;
+constexpr size_t kMulrFrameSize = 9;
 constexpr size_t kGlbpFrameSize = 8;
 constexpr size_t kGlbdFrameSize = 39;
 constexpr size_t kGlbrFrameSize = 7;
@@ -115,7 +116,7 @@ encodeSndr(uint8_t deviceId, uint8_t locationBB, uint8_t locationNN) {
 }
 
 // MULR: F0 3E 0E DEV 01 BB NN ((BB+NN)&7F) F7
-inline std::array<uint8_t, 9>
+inline std::array<uint8_t, kMulrFrameSize>
 encodeMulr(uint8_t deviceId, uint8_t locationBB, uint8_t locationNN) {
     return {
         kSysExBegin, kMfrWaldorf, kDevTypeXT, deviceId, kIdmMulr,
