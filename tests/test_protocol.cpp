@@ -2,6 +2,7 @@
 #include "mw2xtLib/SoundData.h"
 #include "mw2xtLib/MultiData.h"
 #include "mw2xtLib/GlobalData.h"
+#include "mw2xtLib/Protocol.h"
 
 int main() {
     TestRunner r;
@@ -81,6 +82,64 @@ int main() {
         EXPECT(a == b);
         a[0] = 1;
         EXPECT(a != b);
+    });
+
+    // ── SNDP ──────────────────────────────────────────────────────────────
+    r.add("encodeSndp: correct 10-byte frame structure", []() {
+        // Filter 1 Cutoff = SDATA index 62, value 100, device 0, sound mode
+        auto f = mw2xt::encodeSndp(0x00, 0x00, 62, 100);
+        EXPECT_EQ(f.size(), 10u);
+        EXPECT_EQ(f[0], 0xF0u);  // SysEx begin
+        EXPECT_EQ(f[1], 0x3Eu);  // Waldorf mfr
+        EXPECT_EQ(f[2], 0x0Eu);  // MW2/XT device type
+        EXPECT_EQ(f[3], 0x00u);  // device ID
+        EXPECT_EQ(f[4], 0x20u);  // IDM = SNDP
+        EXPECT_EQ(f[5], 0x00u);  // LL = sound mode edit buffer
+        EXPECT_EQ(f[6], 0x00u);  // HH = 0x00 for index < 128
+        EXPECT_EQ(f[7], 62u);    // PP = param index
+        EXPECT_EQ(f[8], 100u);   // XX = value
+        EXPECT_EQ(f[9], 0xF7u);  // SysEx end
+    });
+
+    r.add("encodeSndp: HH=0x01 for index >= 128", []() {
+        // Mod 3 Source = SDATA index 200; 200 & 0x7F = 72
+        auto f = mw2xt::encodeSndp(0x00, 0x00, 200, 5);
+        EXPECT_EQ(f[6], 0x01u);
+        EXPECT_EQ(f[7], 72u);
+        EXPECT_EQ(f[8], 5u);
+    });
+
+    r.add("encodeSndp: index 127 uses HH=0x00 PP=0x7F", []() {
+        auto f = mw2xt::encodeSndp(0x00, 0x00, 127, 0);
+        EXPECT_EQ(f[6], 0x00u);
+        EXPECT_EQ(f[7], 127u);
+    });
+
+    r.add("encodeSndp: index 128 uses HH=0x01 PP=0x00 (boundary)", []() {
+        auto f = mw2xt::encodeSndp(0x00, 0x00, 128, 0);
+        EXPECT_EQ(f[6], 0x01u);
+        EXPECT_EQ(f[7], 0x00u);
+    });
+
+    r.add("encodeSndp: index 255 uses HH=0x01 PP=0x7F", []() {
+        auto f = mw2xt::encodeSndp(0x00, 0x00, 255, 127);
+        EXPECT_EQ(f[6], 0x01u);
+        EXPECT_EQ(f[7], 127u);
+    });
+
+    // ── MULP ──────────────────────────────────────────────────────────────
+    r.add("encodeMulp: IDM byte is 0x21 not 0x20", []() {
+        auto f = mw2xt::encodeMulp(0x00, 0x20, 0x05, 42);
+        EXPECT_EQ(f.size(), 9u);
+        EXPECT_EQ(f[0], 0xF0u);
+        EXPECT_EQ(f[1], 0x3Eu);
+        EXPECT_EQ(f[2], 0x0Eu);
+        EXPECT_EQ(f[3], 0x00u);
+        EXPECT_EQ(f[4], 0x21u);  // MULP IDM — NOT 0x20
+        EXPECT_EQ(f[5], 0x20u);  // LL = multi edit buffer
+        EXPECT_EQ(f[6], 0x05u);  // PP
+        EXPECT_EQ(f[7], 42u);    // XX
+        EXPECT_EQ(f[8], 0xF7u);
     });
 
     return r.run();
