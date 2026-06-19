@@ -15,6 +15,17 @@ if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "macOS deployment target")
 endif()
 
+# ─── mw2xtLib ──────────────────────────────────────────────────────────────
+# Pure C++17 protocol library. No JUCE dependency.
+# Linked by both the plugin and the test binaries.
+add_library(mw2xtLib STATIC
+    source/mw2xtLib/Protocol.cpp
+    source/mw2xtLib/WaveCodec.cpp
+)
+target_include_directories(mw2xtLib PUBLIC source)
+target_compile_features(mw2xtLib PUBLIC cxx_std_17)
+
+# ─── JUCE plugin ───────────────────────────────────────────────────────────
 add_subdirectory(submodules/JUCE)
 
 juce_add_plugin(mw2xtEditor
@@ -53,6 +64,7 @@ target_compile_definitions(mw2xtEditor PRIVATE
 
 target_link_libraries(mw2xtEditor
     PRIVATE
+        mw2xtLib
         juce::juce_audio_processors
         juce::juce_audio_utils
         juce::juce_audio_devices
@@ -62,3 +74,7 @@ target_link_libraries(mw2xtEditor
         juce::juce_recommended_config_flags
         juce::juce_recommended_warning_flags
 )
+
+# ─── Tests ─────────────────────────────────────────────────────────────────
+enable_testing()
+add_subdirectory(tests)
