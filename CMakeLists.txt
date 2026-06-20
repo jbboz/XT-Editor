@@ -28,6 +28,21 @@ target_compile_features(mw2xtLib PUBLIC cxx_std_17)
 # ─── JUCE plugin ───────────────────────────────────────────────────────────
 add_subdirectory(submodules/JUCE)
 
+# ─── Skin binary data ───────────────────────────────────────────────────────
+juce_add_binary_data(mw2xtSkinData
+    NAMESPACE BinaryData
+    SOURCES
+        source/mw2xtLib/parameterDescriptions_xt.json
+        source/mw2xtUI/skins/xtDefault/xtDefault.json
+        source/mw2xtUI/skins/xtDefault/xtDefaultBG.png
+        source/mw2xtUI/skins/xtDefault/xtPageOsc.png
+        source/mw2xtUI/skins/xtDefault/xt_encoder_ranged.png
+        source/mw2xtUI/skins/xtDefault/xt_encoder_ranged_red.png
+        source/mw2xtUI/skins/xtDefault/xtknob.png
+        source/mw2xtUI/skins/xtDefault/xtknob_small.png
+        source/mw2xtUI/skins/xtDefault/led.png
+)
+
 juce_add_plugin(mw2xtEditor
     PRODUCT_NAME                "MW2XT Editor"
     COMPANY_NAME                "Retro Pro Audio"
@@ -57,6 +72,14 @@ target_sources(mw2xtEditor PRIVATE
     source/mw2xtEditor/PatchModel.h
     source/mw2xtEditor/EditorController.cpp
     source/mw2xtEditor/EditorController.h
+    source/mw2xtEditor/SpritesheetKnob.cpp
+    source/mw2xtEditor/SpritesheetKnob.h
+    source/mw2xtEditor/SpritesheetButton.cpp
+    source/mw2xtEditor/SpritesheetButton.h
+    source/mw2xtEditor/PageComponent.cpp
+    source/mw2xtEditor/PageComponent.h
+    source/mw2xtUI/ParamRegistry.cpp
+    source/mw2xtUI/ParamRegistry.h
 )
 
 target_include_directories(mw2xtEditor PRIVATE source)
@@ -71,6 +94,7 @@ target_compile_definitions(mw2xtEditor PRIVATE
 target_link_libraries(mw2xtEditor
     PRIVATE
         mw2xtLib
+        mw2xtSkinData
         juce::juce_audio_processors
         juce::juce_audio_utils
         juce::juce_audio_devices

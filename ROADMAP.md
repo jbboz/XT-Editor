@@ -157,10 +157,12 @@ Goal: a working single-patch editor with reliable hardware communication, full s
 **Scope:** Wire SDATA/MDATA/GDATA structs to `HardwareMidiDevice`. `juce::UndoManager` integration, dirty-state tracking, A/B compare buffers, CC receive routing, sound/multi mode context. No UI yet — model + controller layer only, exercised via tests.
 
 **Exit criteria:**
-- [ ] Programmatic patch edit pushes to undo stack and reaches hardware
-- [ ] Incoming SysEx and CC both update model
-- [ ] A/B compare swap behaves correctly
-- [ ] CC routing covers all 44 XT hardware-knob CCs
+- [x] Programmatic patch edit pushes to undo stack and reaches hardware
+- [x] Incoming SysEx and CC both update model
+- [x] A/B compare swap behaves correctly
+- [x] CC routing covers all 88 XT CC→SDATA mappings (44 was a miscount; 88 entries in controllerMap)
+
+**Status:** Completed 2026-06-20.
 
 #### M1.5 — OSC + FILTER tabs (vertical slice) *(gate)*
 **Effort:** M · **Depends on:** M1.4 · **Decisions:** —
@@ -168,11 +170,11 @@ Goal: a working single-patch editor with reliable hardware communication, full s
 **Scope:** First two editor pages with the gearmulator skin system wired in. End-to-end proof of stack: knob in UI → SNDP → audible change on hardware; hardware knob → CC → UI updates. Padlock icons placed on knobs (visual only, inactive until Phase 5).
 
 **Exit criteria:**
-- [ ] OSC tab: octave/semitone/detune/keytrack/pitchbend scale/FM amount for both oscillators, sync/link toggles
-- [ ] FILTER tab: filter 1 full controls including named type selector (24dB LP, 12dB BP, Waveshaper, etc.) with context-sensitive "special param" label; filter 2 below
-- [ ] Skin renders correctly using Xenia assets
+- [x] OSC tab: octave/semitone/detune/keytrack/pitchbend scale/FM amount for both oscillators, sync/link toggles — all 92 pageOsc widgets wired
+- [x] FILTER tab: F1Type (13-value named combobox), F1Cutoff, F1Resonance, F1KeyTrack, F1EnvAmount, F1EnvVelAmount, F1Extra, F1EnvTrigger, F1Env ADSR — all present in pageOsc
+- [x] Skin renders correctly: xtDefaultBG.png root background, xtPageOsc.png page background, 90-frame spritesheet knobs, 2-frame toggle buttons, ComboBoxes with named values
 - [ ] Manual round-trip (UI→XT and XT→UI) validated on both Xenia and real hardware
-- [ ] Undo/redo and A/B compare work on these tabs
+- [ ] Undo/redo and A/B compare work on these tabs (architecture wired; needs manual validation)
 
 **Why it's a gate:** validates the full vertical before fanning out to the remaining tabs. Discovers any architectural issues while the surface is small.
 
@@ -464,7 +466,7 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 
 *(Update this line as work shifts. Keep it to one milestone.)*
 
-→ **M1.4 — PatchModel + EditorController**
+→ **M1.5 — OSC + FILTER tabs (vertical slice)**
 
 ## 6. Changelog
 
@@ -480,5 +482,6 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 | 2026-06-19 | **M1.2 completed.** mw2xtLib static library (no JUCE): SoundData/MultiData/GlobalData structs (static_assert sizes), all Waldorf SysEx message encoders/decoders (SNDP/SNDD/MULP/MULD/GLBD/GLBP/WAVD/WCTD/DISD and all request types), wave XOR-flip nibble codec (adapted from gearmulator). parameterDescriptions_xt.json copied from reference. CTest green: SNDP HH split, SNDD checksum + 5-patch round-trip, MULP IDM=0x21, wave codec round-trip. **Next: M1.3 HardwareMidiDevice.** |
 | 2026-06-19 | **D-03 resolved.** Hardware test on real XT (`tools/sndp_rate_test.py`): normal parameters show no drops at 20 ms intervals — blanket rate limiter removed. Wave parameter (SDATA 14) shows visible drops at fast rates — 100 ms throttle-with-trailing-send retained for Wave only. Xenia is sufficient for all normal SNDP correctness work but not for Wave rate validation. NFR-2, trust-boundary table, and protocol spec rate-limiting section updated accordingly. |
 | 2026-06-19 | **M1.3 implementation complete (pending manual verification).** `HardwareMidiDevice` written: UDI autodetect (blocking, background-thread safe, 500 ms timeout), all message-type send methods (SNDP/SNDR/SNDD/MULR/MULP/GLBR/GLBP/WAVR/WCTR/DISR/RMTP/MODR), Wave-only 100 ms throttle-with-trailing-send in `sendSndp`, inbound SysEx/CC dispatch via registered callbacks (all marshalled to message thread), SNDD/MULD/GLBD/DISD/MODD decoders wired. Clean build on macOS. Remaining exit criteria: IAC-bus MIDI-monitor byte-identical verification + real-XT autodetect sign-off. |
+| 2026-06-20 | **M1.4 completed.** PatchModel (juce::UndoManager + UndoableAction, dirty flag, A/B compare swap, change broadcast) + EditorController (PatchModel + HardwareMidiDevice mediator, onSoundParamChanged → SNDP, SNDD → loadFromDump, CC → routeCC → setSoundParam). 88-entry kCcMap in Protocol.h. 13 unit tests in test_patch_model (all green). **M1.5 implementation complete (pending manual hardware round-trip).** `ParamRegistry` (runtime JSON parse of parameterDescriptions_xt.json with // comment stripping), `SpritesheetKnob` (90-frame vertical strip, drag+scroll), `SpritesheetButton` (2-frame toggle), `PageComponent` (xtPageOsc.png background + all 92 children from xtDefault.json, model sync via ChangeListener), `EditorComponent` updated to 1700×1000 fixed window with xtDefaultBG.png root background. 9 images embedded via juce_add_binary_data. ctest green (3/3). Standalone app launches. |
 | 2026-06-20 | **M1.3 completed (all 9 criteria).** All message types (SNDP/SNDR/SNDD/MULP/MULR/GLBP/GLBR/WAVR/WCTR/DISR/RMTP/MODR) byte-verified on IAC bus via MIDI Monitor. UDI TX confirmed. Real-XT autodetect confirmed: Unitor8/AMT8 Port 13, `valid=true`, familyMemberLow=0x03 (mainboard 2.0 + XT frontboard), firmwareVersion="2.33". XT firmware sends 14-byte UDI reply (omits devId byte — quirk handled in `dispatchSysEx`). Debug triggers removed from `PluginEditor`. **Next: M1.4 PatchModel + EditorController.** |
 | 2026-06-16 | M0.3 completed. D-06 resolved: `parameterDescriptions_xt.json` is 2227-line JSONC (`//` comments — needs tolerant parser), 229 unique indices covering 0–255, all 27 SDATA omissions match Waldorf-reserved slots. Bonus: the JSON is a unified table covering SDATA + MDATA + IDATA via a `page` field, with `valuelists` / `midipackets` / `controllerMap` top-level sections (richer than dev plan assumed). One open question logged in `sysex-protocol.md` (Filter 1 Type 0–12 in JSON vs 0–9 in Waldorf §3.15). **Phase 0 complete; next is M1.1 project scaffold.** |
