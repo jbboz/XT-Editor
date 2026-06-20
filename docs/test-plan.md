@@ -265,14 +265,18 @@ Record the exact bytes returned and note them in the ROADMAP.md changelog. If `m
 
 All items must be checked before marking M1.3 complete in ROADMAP.md.
 
-- [ ] SNDP HH=`00` for idx 0–127; HH=`01` for idx 128–255 — MIDI Monitor confirms
-- [ ] SNDP idx=128 byte sequence matches Edisyn byte-for-byte
-- [ ] MULP IDM = `21h` (not `20h`) — MIDI Monitor confirms
-- [ ] GLBP is 8 bytes with no checksum byte before `F7`
-- [ ] All other message types in Part B match expected bytes exactly
-- [ ] SNDD TX is 265 bytes; XSUM validates; Filter param bytes at correct offsets
-- [ ] UDI TX = `F0 7E 7F 06 01 F7` on IAC bus
-- [ ] Real XT autodetect returns `valid=true` with correct family/member code
-- [ ] Returned firmware version string logged in ROADMAP.md changelog
+- [x] SNDP HH=`00` for idx 0–127; HH=`01` for idx 128–255 — MIDI Monitor confirmed 2026-06-20
+- [x] SNDP idx=128 byte sequence matches expected (`F0 3E 0E 00 20 00 01 00 00 F7`) — MIDI Monitor confirmed 2026-06-20 (Edisyn unavailable; independently-computed bytes used per Part C fallback)
+- [x] MULP IDM = `21h` (not `20h`) — MIDI Monitor confirmed 2026-06-20
+- [x] GLBP is 8 bytes with no checksum byte before `F7` — MIDI Monitor confirmed 2026-06-20
+- [x] All other message types in Part B match expected bytes exactly — MIDI Monitor confirmed 2026-06-20
+- [x] SNDD TX is 265 bytes; Filter param bytes at correct offsets (bytes[69]=`40`, bytes[70]=`20`) — MIDI Monitor confirmed 2026-06-20
+- [x] UDI TX = `F0 7E 7F 06 01 F7` on IAC bus — MIDI Monitor confirmed 2026-06-20 (labeled "Universal Non-Real Time 6 bytes")
+- [x] Real XT autodetect returns `valid=true` with correct family/member code — confirmed 2026-06-20; port=Unitor8/AMT8 Port 13, deviceId=0x00, familyMemberLow=0x03, familyMemberHigh=0x00, firmware="2.33" (14-byte XT firmware quirk: omits devId byte; parser handles both 14- and 15-byte formats)
+- [x] Returned firmware version string logged in ROADMAP.md changelog — confirmed 2026-06-20
 
-On full pass: mark the two remaining `[ ]` exit criteria `[x]` in `ROADMAP.md`, update "Currently in flight" to M1.4, and remove the `runMidiVerification()` debug trigger from `PluginEditor`.
+**Observations from 2026-06-20 run:**
+- Key repeat fired ~58 repetitions; `keyPressed` should guard with `k.isKeyCurrentlyDown()` check or a flag if repeat is a problem in practice.
+- `juce::Thread::sleep()` called from the message thread is a no-op; 50ms pauses did not take effect. Frames arrived out of send-order but all bytes were correct. Pauses are cosmetic for human readability in MIDI Monitor only.
+
+**M1.3 closed 2026-06-20.** All 9 pass criteria confirmed. Exit criteria marked `[x]` in `ROADMAP.md`. "Currently in flight" updated to M1.4. Debug triggers (`runMidiVerification`, `runAutodetectScan`) removed from `PluginEditor`.

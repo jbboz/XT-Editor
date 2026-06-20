@@ -17,6 +17,7 @@ import rtmidi
 import time
 import argparse
 import sys
+from typing import List, Optional
 
 # ---------------------------------------------------------------------------
 # SNDP message construction
@@ -28,14 +29,14 @@ IDM_SNDP        = 0x20  # Sound Parameter Change
 IDM_SNDR        = 0x00  # Sound Dump Request  (to read back final value)
 IDM_SNDD        = 0x10  # Sound Dump (response)
 
-def sndp(device_id: int, param_index: int, value: int) -> list[int]:
-    """Build a single SNDP SysEx message."""
+def sndp(device_id: int, param_index: int, value: int, location: int = 0x00) -> List[int]:
+    """Build a single SNDP SysEx message (10 bytes: F0 3E 0E DEV 20 LL HH PP XX F7)."""
     hh = 0x01 if param_index >= 128 else 0x00
     pp = param_index & 0x7F
     vv = value & 0x7F
-    return [0xF0, WALDORF_MFRID, WALDORF_DEVTYPE, device_id, IDM_SNDP, hh, pp, vv, 0xF7]
+    return [0xF0, WALDORF_MFRID, WALDORF_DEVTYPE, device_id, IDM_SNDP, location, hh, pp, vv, 0xF7]
 
-def sndr(device_id: int) -> list[int]:
+def sndr(device_id: int) -> List[int]:
     """Build a Sound Dump Request for the edit buffer."""
     # BB=20h (single edit buffer single mode), NN=00h
     return [0xF0, WALDORF_MFRID, WALDORF_DEVTYPE, device_id, IDM_SNDR, 0x20, 0x00, 0x7F, 0xF7]
@@ -46,10 +47,10 @@ def sndr(device_id: int) -> list[int]:
 # Format: (name, sdata_index, min_val, max_val)
 # Using audible, continuous parameters that won't cause side effects.
 PARAMS = [
-    ("Filter1 Cutoff",  62,   0, 127),   # obvious audible sweep, very common knob
-    ("Filter1 Reson",   63,   0, 127),   # resonance
-    ("Osc1 Detune",      5,   0, 127),   # detuning, clearly audible
-    ("Wave",            14,   0, 127),   # wavetable position — the one gearmulator rate-limits
+    ("Filter1 Cutoff",  62,   0, 127),   # SDATA 62 — obvious audible sweep
+    ("Filter1 Reson",   63,   0, 127),   # SDATA 63 — resonance
+    ("Osc1 Detune",      3,   0, 127),   # SDATA 3  — detuning, clearly audible
+    ("Wavetable",       25,   0, 127),   # SDATA 25 — wavetable position, the one gearmulator rate-limits
 ]
 
 # ---------------------------------------------------------------------------
@@ -84,7 +85,7 @@ def list_ports():
         print(f"  {i:2d}: {name}")
 
 
-def find_port(ports: list[str], query: str) -> int | None:
+def find_port(ports: List[str], query: str) -> Optional[int]:
     """Find port by index or substring match."""
     try:
         idx = int(query)
@@ -99,7 +100,7 @@ def find_port(ports: list[str], query: str) -> int | None:
         return None
 
 
-def run_rate_test(midi_out, midi_in, device_id: int, results: list[str]):
+def run_rate_test(midi_out, midi_in, device_id: int, results: List[str]):
     print(f"\nDevice ID: {device_id} (channel {device_id + 1})\n")
     results.append(f"Device ID: {device_id}\n")
 
@@ -122,11 +123,21 @@ def run_rate_test(midi_out, midi_in, device_id: int, results: list[str]):
 
             # Send sweep
             t0 = time.perf_counter()
-            for v in values:
+            send_errors = 0
+            for i, v in enumerate(values):
                 msg = sndp(device_id, param_idx, v)
-                midi_out.send_message(msg)
+                if i == 0:
+                    print(f"  [first msg: {' '.join(f'{b:02X}' for b in msg)}]", flush=True)
+                try:
+                    midi_out.send_message(msg)
+                except Exception as e:
+                    send_errors += 1
+                    if send_errors == 1:
+                        print(f"\n  [send error: {e}]", flush=True)
                 time.sleep(interval_s)
             elapsed = time.perf_counter() - t0
+            if send_errors:
+                print(f"  [{send_errors} send errors total]", flush=True)
 
             # Let the XT settle, then request dump to read back state
             time.sleep(SETTLE_MS / 1000.0)

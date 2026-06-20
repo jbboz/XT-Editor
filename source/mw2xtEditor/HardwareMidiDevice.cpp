@@ -212,30 +212,40 @@ void HardwareMidiDevice::dispatchSysEx(const std::vector<uint8_t>& bytes)
     if (bytes.size() < 2 || bytes.front() != 0xF0 || bytes.back() != 0xF7)
         return;
 
-    // Universal Device Inquiry Identity Reply:
-    // F0 7E <devId> 06 02 3E 0E 00 <memberLow> <memberHigh> V1 V2 V3 V4 F7
-    // = 15 bytes
-    if (bytes.size() == 15 &&
-        bytes[1] == 0x7E   &&
-        bytes[3] == 0x06   &&
-        bytes[4] == 0x02   &&
-        bytes[5] == 0x3E   &&  // Waldorf manufacturer
-        bytes[6] == 0x0E   &&  // Microwave II equipment ID
-        bytes[7] == 0x00)
+    // Universal Device Inquiry Identity Reply — two observed wire formats:
+    //
+    // Standard (15 bytes): F0 7E <devId> 06 02 3E 0E 00 <ml> <mh> V1 V2 V3 V4 F7
+    // XT firmware quirk (14 bytes): F0 7E 06 02 3E 0E 00 <ml> <mh> V1 V2 V3 V4 F7
+    //   (omits the device ID byte — devId reported as 0x00)
     {
-        if (awaitingUdi.load(std::memory_order_acquire)) {
-            juce::ScopedLock lock(udiLock);
-            udiResult.valid             = true;
-            udiResult.deviceId          = bytes[2];
-            udiResult.familyMemberLow   = bytes[8];
-            udiResult.familyMemberHigh  = bytes[9];
-            udiResult.firmwareVersion[0] = static_cast<char>(bytes[10]);
-            udiResult.firmwareVersion[1] = static_cast<char>(bytes[11]);
-            udiResult.firmwareVersion[2] = static_cast<char>(bytes[12]);
-            udiResult.firmwareVersion[3] = static_cast<char>(bytes[13]);
-            udiEvent.signal();
+        bool is15 = bytes.size() == 15
+                    && bytes[1] == 0x7E
+                    && bytes[3] == 0x06 && bytes[4] == 0x02
+                    && bytes[5] == 0x3E && bytes[6] == 0x0E && bytes[7] == 0x00;
+
+        bool is14 = bytes.size() == 14
+                    && bytes[1] == 0x7E
+                    && bytes[2] == 0x06 && bytes[3] == 0x02
+                    && bytes[4] == 0x3E && bytes[5] == 0x0E && bytes[6] == 0x00;
+
+        if (is15 || is14)
+        {
+            if (awaitingUdi.load(std::memory_order_acquire))
+            {
+                const std::size_t base = is15 ? 2u : 1u;  // offset of devId (15-byte) or memberLow-1 (14-byte)
+                juce::ScopedLock lock(udiLock);
+                udiResult.valid              = true;
+                udiResult.deviceId           = is15 ? bytes[2] : 0x00;
+                udiResult.familyMemberLow    = bytes[base + 6];
+                udiResult.familyMemberHigh   = bytes[base + 7];
+                udiResult.firmwareVersion[0] = static_cast<char>(bytes[base + 8]);
+                udiResult.firmwareVersion[1] = static_cast<char>(bytes[base + 9]);
+                udiResult.firmwareVersion[2] = static_cast<char>(bytes[base + 10]);
+                udiResult.firmwareVersion[3] = static_cast<char>(bytes[base + 11]);
+                udiEvent.signal();
+            }
+            return;
         }
-        return;
     }
 
     // All other Waldorf SysEx: F0 3E 0E DEV IDM [data...] [XSUM] F7

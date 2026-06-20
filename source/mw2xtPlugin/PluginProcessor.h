@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "../mw2xtEditor/EditorController.h"
 
 namespace mw2xt
 {
@@ -35,7 +36,11 @@ public:
     void getStateInformation(juce::MemoryBlock&) override;
     void setStateInformation(const void*, int) override;
 
+    EditorController& getController() noexcept { return controller; }
+
 private:
+    EditorController controller;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EditorProcessor)
 };
 

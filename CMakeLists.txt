@@ -53,6 +53,10 @@ target_sources(mw2xtEditor PRIVATE
     source/mw2xtPlugin/PluginEditor.h
     source/mw2xtEditor/HardwareMidiDevice.cpp
     source/mw2xtEditor/HardwareMidiDevice.h
+    source/mw2xtEditor/PatchModel.cpp
+    source/mw2xtEditor/PatchModel.h
+    source/mw2xtEditor/EditorController.cpp
+    source/mw2xtEditor/EditorController.h
 )
 
 target_include_directories(mw2xtEditor PRIVATE source)
@@ -70,6 +74,7 @@ target_link_libraries(mw2xtEditor
         juce::juce_audio_processors
         juce::juce_audio_utils
         juce::juce_audio_devices
+        juce::juce_data_structures
         juce::juce_gui_extra
         juce::juce_core
     PUBLIC

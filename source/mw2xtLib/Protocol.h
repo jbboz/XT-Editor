@@ -204,4 +204,109 @@ struct DisplayState {
 std::vector<uint8_t> encodeDisd(uint8_t deviceId, const DisplayState& ds);
 std::optional<DisplayState> decodeDisd(const std::vector<uint8_t>& frame);
 
+// ─── CC → SDATA index mapping ────────────────────────────────────────────
+// 88 entries derived from parameterDescriptions_xt.json §controllerMap.
+struct CcMapping { uint8_t cc; uint8_t sdataIndex; };
+
+inline constexpr CcMapping kCcMap[] = {
+    {  10,  84 },  // Pan
+    {  12,  82 },  // ChorusEnabled
+    {  14, 113 },  // F1EnvAttack
+    {  15, 114 },  // F1EnvDecay
+    {  16, 115 },  // F1EnvSustain
+    {  17, 116 },  // F1EnvRelease
+    {  18, 119 },  // AmpEnvAttack
+    {  19, 120 },  // AmpEnvDecay
+    {  20, 121 },  // AmpEnvSustain
+    {  21, 122 },  // AmpEnvRelease
+    {  22,  88 },  // GlideType
+    {  23,  89 },  // GlideMode
+    {  24, 159 },  // Lfo1Rate
+    {  25, 160 },  // Lfo1Shape
+    {  26, 166 },  // Lfo2Rate
+    {  27, 168 },  // Lfo2Delay
+    {  28, 167 },  // Lfo2Shape
+    {  29, 117 },  // F1EnvTrigger
+    {  30, 161 },  // Lfo1Delay
+    {  31, 123 },  // AmpEnvTrigger
+    {  33,   1 },  // O1Octave
+    {  34,   2 },  // O1Semi
+    {  35,   3 },  // O1Detune
+    {  36,   5 },  // O1BendRange
+    {  37,   6 },  // O1KeyTrack
+    {  38,  12 },  // O2Octave
+    {  39,  13 },  // O2Semi
+    {  40,  14 },  // O2Detune
+    {  41,  16 },  // O2Sync
+    {  42,  17 },  // O2BendRange
+    {  43,  18 },  // O2KeyTrack
+    {  44,  19 },  // O2Link
+    {  45,  47 },  // MixW1
+    {  46,  48 },  // MixW2
+    {  47,  49 },  // MixRingMod
+    {  48,  50 },  // MixNoise
+    {  50,  62 },  // F1Cutoff
+    {  51,  65 },  // F1KeyTrack
+    {  52,  66 },  // F1EnvAmount
+    {  53,  67 },  // F1EnvVelAmount
+    {  54,  64 },  // F1Type
+    {  55,  80 },  // AmpKeytrack
+    {  56,  63 },  // F1Resonance
+    {  57,  77 },  // AmpVolume
+    {  58,  79 },  // AmpVelocity
+    {  60,  73 },  // F2Cutoff
+    {  61,  74 },  // F2Type
+    {  62,  75 },  // F2KeyTrack
+    {  70,  25 },  // Wave
+    {  71,  26 },  // W1StartW
+    {  72,  27 },  // W1StartP
+    {  73,  28 },  // W1EnvAmount
+    {  74,  29 },  // W1EnvVelAmount
+    {  75,  30 },  // W1Keytrack
+    {  76,  31 },  // W1Limit
+    {  77,  36 },  // W2StartW
+    {  78,  37 },  // W2StartP
+    {  79,  38 },  // W2EnvAmount
+    {  80,  39 },  // W2EnvVelAmount
+    {  81,  40 },  // W2Keytrack
+    {  82,  41 },  // W2Limit
+    {  83,  42 },  // W2Link
+    {  85, 149 },  // FreeEnvTime1
+    {  86, 150 },  // FreeEnvLevel1
+    {  87, 151 },  // FreeEnvTime2
+    {  88, 152 },  // FreeEnvLevel2
+    {  89, 153 },  // FreeEnvTime3
+    {  90, 154 },  // FreeEnvLevel3
+    {  91, 155 },  // FreeEnvReleaseTime
+    {  92, 156 },  // FreeEnvReleaseLevel
+    {  93, 157 },  // FreeEnvTrigger
+    { 102,  92 },  // ArpMode
+    { 103,  95 },  // ArpRange
+    { 104,  94 },  // ArpClock
+    { 105,  93 },  // ArpTempo
+    { 106,  97 },  // ArpDirection
+    { 107,  96 },  // ArpPattern
+    { 108,  98 },  // ArpNoteOrder
+    { 109,  99 },  // ArpVelocity
+    { 110, 100 },  // ArpReset
+    { 111, 101 },  // ArpUserPatternLength
+    { 112, 162 },  // Lfo1Sync
+    { 113, 163 },  // Lfo1Symmetry
+    { 114, 164 },  // Lfo1Humanize
+    { 115, 169 },  // Lfo2Sync
+    { 116, 170 },  // Lfo2Symmetry
+    { 117, 171 },  // Lfo2Humanize
+    { 118, 172 },  // Lfo2Phase
+};
+
+inline constexpr int kCcMapSize = static_cast<int>(sizeof(kCcMap) / sizeof(kCcMap[0]));
+
+// Returns SDATA index for the given CC, or -1 if not mapped.
+inline int ccToSdataIndex(int cc) noexcept {
+    for (int i = 0; i < kCcMapSize; ++i)
+        if (kCcMap[i].cc == static_cast<uint8_t>(cc))
+            return kCcMap[i].sdataIndex;
+    return -1;
+}
+
 } // namespace mw2xt

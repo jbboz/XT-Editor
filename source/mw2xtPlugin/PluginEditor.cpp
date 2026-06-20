@@ -22,7 +22,7 @@ void EditorComponent::paint(juce::Graphics& g)
 
     g.setColour(juce::Colour::fromRGB(0x88, 0x88, 0x88));
     g.setFont(juce::Font(juce::FontOptions(14.0f)));
-    g.drawText("Phase 1 scaffold (M1.1) — protocol layer arrives at M1.2",
+    g.drawText("Phase 1 scaffold — M1.3 complete, M1.4 in progress",
                getLocalBounds().reduced(20),
                juce::Justification::centred);
 }

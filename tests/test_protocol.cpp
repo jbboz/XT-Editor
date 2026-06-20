@@ -226,5 +226,35 @@ int main() {
         EXPECT(mw2xt::decodeSndd(f).has_value());
     });
 
+    // CC map
+    r.add("kCcMapSize is 88", []() {
+        EXPECT_EQ(mw2xt::kCcMapSize, 88);
+    });
+
+    r.add("ccToSdataIndex: known mappings", []() {
+        EXPECT_EQ(mw2xt::ccToSdataIndex(50),  62);  // F1Cutoff
+        EXPECT_EQ(mw2xt::ccToSdataIndex(56),  63);  // F1Resonance
+        EXPECT_EQ(mw2xt::ccToSdataIndex(70),  25);  // Wave
+        EXPECT_EQ(mw2xt::ccToSdataIndex(33),   1);  // O1Octave
+        EXPECT_EQ(mw2xt::ccToSdataIndex(118), 172); // Lfo2Phase
+    });
+
+    r.add("ccToSdataIndex: unmapped CC returns -1", []() {
+        EXPECT_EQ(mw2xt::ccToSdataIndex(0),   -1);
+        EXPECT_EQ(mw2xt::ccToSdataIndex(7),   -1);  // MIDI Volume — not in map
+        EXPECT_EQ(mw2xt::ccToSdataIndex(127), -1);
+    });
+
+    r.add("kCcMap: all SDATA indices in range 0-255", []() {
+        for (int i = 0; i < mw2xt::kCcMapSize; ++i)
+            EXPECT(mw2xt::kCcMap[i].sdataIndex <= 255);
+    });
+
+    r.add("kCcMap: no duplicate CC numbers", []() {
+        for (int i = 0; i < mw2xt::kCcMapSize; ++i)
+            for (int j = i + 1; j < mw2xt::kCcMapSize; ++j)
+                EXPECT(mw2xt::kCcMap[i].cc != mw2xt::kCcMap[j].cc);
+    });
+
     return r.run();
 }
