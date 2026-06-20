@@ -51,6 +51,8 @@ target_sources(mw2xtEditor PRIVATE
     source/mw2xtPlugin/PluginProcessor.h
     source/mw2xtPlugin/PluginEditor.cpp
     source/mw2xtPlugin/PluginEditor.h
+    source/mw2xtEditor/HardwareMidiDevice.cpp
+    source/mw2xtEditor/HardwareMidiDevice.h
 )
 
 target_include_directories(mw2xtEditor PRIVATE source)

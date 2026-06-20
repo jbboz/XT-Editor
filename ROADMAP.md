@@ -144,8 +144,10 @@ Goal: a working single-patch editor with reliable hardware communication, full s
 **Exit criteria:**
 - [ ] Every message type (SNDP/SNDR/SNDD/MULx/GLBx/WAVx/WCTx/DISx/RMTP/MODx) frames byte-identical to Edisyn on the IAC bus (MIDI monitor verified)
 - [ ] Autodetect returns correct family/device ID against real XT
-- [ ] 100ms SNDP coalescing validated on physical firmware (not just Xenia)
-- [ ] D-03 marked Resolved — record whether Xenia is faithful enough for future rate-limiter work or whether hardware is mandatory
+- [x] 100ms SNDP coalescing validated on physical firmware (not just Xenia) — **D-03 resolved 2026-06-19.** Wave-only 100ms throttle-with-trailing-send in `sendSndp`; normal parameters immediate.
+- [x] D-03 marked Resolved — Xenia sufficient for all normal SNDP correctness work; Wave parameter (SDATA 14) rate behaviour requires real hardware.
+
+**Implementation note (2026-06-19):** `HardwareMidiDevice` class written (`source/mw2xtEditor/`). All message-type send methods, UDI autodetect with configurable timeout, Wave-only 100ms throttle, inbound SysEx/CC dispatch via registered callbacks, DISD/SNDD/MULD/GLBD/MODD decoders wired. Builds clean. Remaining exit criteria require manual IAC-bus + real-XT verification.
 
 **Why it's a gate:** UI work without a verified comms layer just builds bug-laundry on top.
 
@@ -462,7 +464,7 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 
 *(Update this line as work shifts. Keep it to one milestone.)*
 
-→ **M1.3 — HardwareMidiDevice + dual test harness** (gate). M1.2 complete: mw2xtLib builds JUCE-free, ctest green for all M1.2 exit criteria.
+→ **M1.3 — HardwareMidiDevice + dual test harness** (gate). Implementation complete (`HardwareMidiDevice.h/.cpp`); pending: IAC-bus MIDI-monitor verification of all message types + real-XT autodetect sign-off.
 
 ## 6. Changelog
 
@@ -477,4 +479,5 @@ Goal: the feature that defines this editor against every existing MW2/XT tool.
 | 2026-06-16 | **M1.1 completed.** JUCE 8.0.13 and sqlite_orm v1.9.1 added as submodules at pinned commits. Source tree created (`source/{mw2xtLib,mw2xtEditor,mw2xtUI,mw2xtPlugin,patchManager}/`). Minimal AudioProcessor + AudioProcessorEditor shell in `mw2xtPlugin/` — empty 960×600 window with "MW2/XT Editor" placeholder. Top-level `CMakeLists.txt` configures the plugin as a MIDI Processor (`IS_MIDI_EFFECT TRUE`, `AU_MAIN_TYPE kAudioUnitType_MIDIProcessor`). All three formats — Standalone (.app), VST3 (.vst3), AU (.component) — build successfully on macOS / Apple Silicon (Xcode 26.5, JUCE 8.0.13). AU bundle metadata verified: `type=aumi`, `subtype=MwXT`, `manufacturer=RPAu`. **`auval -v aumi MwXT RPAu` passes the full validation suite** (Cocoa view, class info, host callbacks, parameter info). 12 MB of Xenia skin assets (35 PNGs + Digital.ttf + xtDefault.json) copied to `source/mw2xtUI/skins/xtDefault/` with per-file ATTRIBUTIONS entry. AGPL-3.0 LICENSE file added at repo root. Bundle id `com.retroproaudio.mw2xtEditor`. **Next: M1.2 protocol layer.** |
 | 2026-06-19 | **M1.2 completed.** mw2xtLib static library (no JUCE): SoundData/MultiData/GlobalData structs (static_assert sizes), all Waldorf SysEx message encoders/decoders (SNDP/SNDD/MULP/MULD/GLBD/GLBP/WAVD/WCTD/DISD and all request types), wave XOR-flip nibble codec (adapted from gearmulator). parameterDescriptions_xt.json copied from reference. CTest green: SNDP HH split, SNDD checksum + 5-patch round-trip, MULP IDM=0x21, wave codec round-trip. **Next: M1.3 HardwareMidiDevice.** |
 | 2026-06-19 | **D-03 resolved.** Hardware test on real XT (`tools/sndp_rate_test.py`): normal parameters show no drops at 20 ms intervals — blanket rate limiter removed. Wave parameter (SDATA 14) shows visible drops at fast rates — 100 ms throttle-with-trailing-send retained for Wave only. Xenia is sufficient for all normal SNDP correctness work but not for Wave rate validation. NFR-2, trust-boundary table, and protocol spec rate-limiting section updated accordingly. |
+| 2026-06-19 | **M1.3 implementation complete (pending manual verification).** `HardwareMidiDevice` written: UDI autodetect (blocking, background-thread safe, 500 ms timeout), all message-type send methods (SNDP/SNDR/SNDD/MULR/MULP/GLBR/GLBP/WAVR/WCTR/DISR/RMTP/MODR), Wave-only 100 ms throttle-with-trailing-send in `sendSndp`, inbound SysEx/CC dispatch via registered callbacks (all marshalled to message thread), SNDD/MULD/GLBD/DISD/MODD decoders wired. Clean build on macOS. Remaining exit criteria: IAC-bus MIDI-monitor byte-identical verification + real-XT autodetect sign-off. |
 | 2026-06-16 | M0.3 completed. D-06 resolved: `parameterDescriptions_xt.json` is 2227-line JSONC (`//` comments — needs tolerant parser), 229 unique indices covering 0–255, all 27 SDATA omissions match Waldorf-reserved slots. Bonus: the JSON is a unified table covering SDATA + MDATA + IDATA via a `page` field, with `valuelists` / `midipackets` / `controllerMap` top-level sections (richer than dev plan assumed). One open question logged in `sysex-protocol.md` (Filter 1 Type 0–12 in JSON vs 0–9 in Waldorf §3.15). **Phase 0 complete; next is M1.1 project scaffold.** |
