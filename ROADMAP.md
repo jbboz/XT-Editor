@@ -43,6 +43,7 @@ Convention: **Blocks** = milestones that cannot start until this decision is res
 | D-04 | IDATA byte count vs spec §3.3 (plan says 28; verify before freezing `InstrumentData` struct) | **Resolved (2026-06-16)** | — | Confirmed 28 bytes. Waldorf §3.3 enumerates indices 0–27; §2.22 MULD layout has each IDATA occupy 28 bytes (offsets 39–66, 67–94, …). Recorded in [`sysex-protocol.md` §IDATA](docs/spec/sysex-protocol.md). |
 | D-05 | MidiKraft-librarian standalone buildability | **Resolved (2026-06-16)** | M1.1 | Investigated in M0.2. **Not feasible:** repo is archived, requires juce-utils + midikraft-base + nlohmann_json + fmt as deps, and ~9 abstract capability interfaces from midikraft-base to be implemented. **Path forward:** write our own focused SNDR→SNDD state machine in M2.3 (estimated 200–400 lines). See [`references/MidiKraft-librarian.md`](references/MidiKraft-librarian.md). |
 | D-06 | Exact filename + completeness of `parameterDescriptions_*.json` in gearmulator | **Resolved (2026-06-16)** | M1.2 | Investigated in M0.3. Filename: `source/xtJucePlugin/parameterDescriptions_xt.json`. Format: JSONC. 229 unique indices covering 0–255; 27 omissions all match Waldorf §3.1 reserved slots. Bonus: the JSON is a unified table covering SDATA + MDATA + IDATA via `page` field. One follow-up open question (Filter 1 Type indices 10–12 reality-check) tracked in [`docs/spec/sysex-protocol.md` §Open items](docs/spec/sysex-protocol.md). |
+| D-07 | Adopt RmlUi for the M2/M3 complex UIs (patch manager, wave editor) vs JUCE-native reimplementation? Prompted by Xenia **2.2.6** moving to RmlUi + new patch management (was 1.4.1). | **Deferred** | M2.2, M3 | D-01 already chose JUCE-native skin (Xenia PNG + legacy JSON layout) for Phase 1 — unchanged; M1.6 stays native. The only real driver to revisit RmlUi is exact upstream parity for M2's patch manager and M3's wave editor, which is where 2.2.6's RmlUi changes bite. **Cost if adopted:** vendor RmlUi (~40 files) + `juceRmlUi` + Lua VM + custom Metal/OpenGL renderers + sse2neon, re-platform param binding onto RmlUi's data model, per-host renderer-init risk — M0.2 called the closure "fork most of gearmulator." **Decide at M2.2 start:** reimplement those two UIs JUCE-native (current plan) or adopt RmlUi just for them. If taken seriously, time-box a spike (one RML knob bound to one `SoundData` param inside our plugin shell) before committing. See `ATTRIBUTIONS.md` D-01 rationale. |
 
 ## 4. Milestones
 
@@ -207,7 +208,7 @@ Goal: database-backed library with hardware bulk transfer and a browser that's a
 - [ ] Auto-scan picks up new files in configured source folders
 
 #### M2.2 — Browser panel
-**Effort:** XL — split before starting (was L; raised after M0.2 spike — gearmulator's patch-manager UI is RmlUi-coupled and reimplemented JUCE-native per D-01 resolution) · **Depends on:** M2.1 · **Decisions:** —
+**Effort:** XL — split before starting (was L; raised after M0.2 spike — gearmulator's patch-manager UI is RmlUi-coupled and reimplemented JUCE-native per D-01 resolution) · **Depends on:** M2.1 · **Decisions:** D-07
 
 **Scope:** Build a JUCE-native browser UI on top of the borrowed PatchDB (M2.1). Grid + list views, full-text search, tag browser, three-state rating (favourite / neutral / hidden). Drag patch to hardware edit buffer. Drag to bank slot. Panel slides in as overlay; main editor remains visible.
 
@@ -254,7 +255,7 @@ Goal: database-backed library with hardware bulk transfer and a browser that's a
 Goal: draw, import, and upload custom waves and wavetables with a visualizer the hardware cannot offer.
 
 #### M3.1 — Waveform editor
-**Effort:** L · **Depends on:** M1.6 · **Decisions:** —
+**Effort:** L · **Depends on:** M1.6 · **Decisions:** D-07
 
 **Scope:** 64-sample canvas with pencil and line tools. Harmonic editor (additive). Audio file import with auto-trim to single cycle.
 
