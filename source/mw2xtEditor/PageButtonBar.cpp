@@ -18,15 +18,21 @@ PageButtonBar::PageButtonBar(juce::Image sheet, std::vector<ButtonDef> defs) {
 }
 
 void PageButtonBar::handleClick(PageId id) {
-    selectPage(id);
-    if (onPageSelected)
+    const bool changed = (id != selected);
+    selectPage(id);                  // always re-assert radio visuals (the button toggled itself on mouseDown)
+    if (changed && onPageSelected)   // fire only when the page actually changed
         onPageSelected(id);
 }
 
 void PageButtonBar::selectPage(PageId id) {
     selected = id;
-    for (auto& e : entries)
-        e.btn->setToggleState(e.id == id, false);   // false = no callback
+    bool found = false;
+    for (auto& e : entries) {
+        const bool on = (e.id == id);
+        e.btn->setToggleState(on, false);   // false = no callback
+        found = found || on;
+    }
+    jassert(found);   // selectPage called with a PageId that has no button
 }
 
 bool PageButtonBar::getToggleState(PageId id) const noexcept {
