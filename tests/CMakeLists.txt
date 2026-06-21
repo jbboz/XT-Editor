@@ -40,3 +40,19 @@ target_link_libraries(test_conditional_image PRIVATE
     juce::juce_recommended_config_flags
 )
 add_test(NAME ConditionalImageTests COMMAND test_conditional_image)
+
+juce_add_console_app(test_page_container PRODUCT_NAME "PageContainer Tests")
+target_sources(test_page_container PRIVATE
+    test_page_container.cpp
+    ../source/mw2xtEditor/PageContainer.cpp
+)
+target_include_directories(test_page_container PRIVATE
+    ${CMAKE_SOURCE_DIR}/source
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(test_page_container PRIVATE
+    juce::juce_gui_basics
+    juce::juce_recommended_warning_flags
+    juce::juce_recommended_config_flags
+)
+add_test(NAME PageContainerTests COMMAND test_page_container)
