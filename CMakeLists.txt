@@ -47,6 +47,11 @@ juce_add_binary_data(mw2xtSkinData
         source/mw2xtUI/skins/xtDefault/f1Type8.png
         source/mw2xtUI/skins/xtDefault/f1Type9.png
         source/mw2xtUI/skins/xtDefault/f1Type12.png
+        source/mw2xtUI/skins/xtDefault/xtPageMod.png
+        source/mw2xtUI/skins/xtDefault/xtPageArp.png
+        source/mw2xtUI/skins/xtDefault/xtPageMulti.png
+        source/mw2xtUI/skins/xtDefault/xtPageWave.png
+        source/mw2xtUI/skins/xtDefault/xtPagePatchManager.png
 )
 
 juce_add_plugin(mw2xtEditor
@@ -85,6 +90,8 @@ target_sources(mw2xtEditor PRIVATE
     source/mw2xtEditor/ConditionalImage.cpp
     source/mw2xtEditor/PageComponent.cpp
     source/mw2xtEditor/PageComponent.h
+    source/mw2xtEditor/PageContainer.cpp
+    source/mw2xtEditor/PageButtonBar.cpp
     source/mw2xtUI/ParamRegistry.cpp
     source/mw2xtUI/ParamRegistry.h
 )

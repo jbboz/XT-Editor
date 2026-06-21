@@ -4,6 +4,8 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 #include "../mw2xtUI/ParamRegistry.h"
 #include "../mw2xtEditor/PageComponent.h"
+#include "../mw2xtEditor/PageContainer.h"
+#include "../mw2xtEditor/PageButtonBar.h"
 
 namespace mw2xt
 {
@@ -41,7 +43,8 @@ private:
     juce::Image      rootBG;
     ParamRegistry    paramRegistry;
     PageComponent::SkinImages skinImages;
-    std::unique_ptr<PageComponent> pageOsc;
+    PageContainer                  pageContainer;
+    std::unique_ptr<PageButtonBar> pageButtons;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EditorComponent)
 };

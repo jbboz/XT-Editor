@@ -56,13 +56,50 @@ EditorComponent::EditorComponent(EditorProcessor& p)
             return {};
         };
 
-    const juce::var pageOscNode = findPage(skinJson, "pageOsc");
-    const juce::Image oscBg = loadPng(BinaryData::xtPageOsc_png,
-                                      BinaryData::xtPageOsc_pngSize);
+    // ── Filter-type conditional icons (looked up by texture name) ─────────────
+    skinImages.namedImages["f1TypeUnused"] = loadPng(BinaryData::f1TypeUnused_png,
+                                                     BinaryData::f1TypeUnused_pngSize);
+    skinImages.namedImages["f1Type6"]  = loadPng(BinaryData::f1Type6_png,  BinaryData::f1Type6_pngSize);
+    skinImages.namedImages["f1Type7"]  = loadPng(BinaryData::f1Type7_png,  BinaryData::f1Type7_pngSize);
+    skinImages.namedImages["f1Type8"]  = loadPng(BinaryData::f1Type8_png,  BinaryData::f1Type8_pngSize);
+    skinImages.namedImages["f1Type9"]  = loadPng(BinaryData::f1Type9_png,  BinaryData::f1Type9_pngSize);
+    skinImages.namedImages["f1Type12"] = loadPng(BinaryData::f1Type12_png, BinaryData::f1Type12_pngSize);
 
-    pageOsc = std::make_unique<PageComponent>(
-        proc.getController(), paramRegistry, pageOscNode, oscBg, skinImages);
-    addAndMakeVisible(*pageOsc);
+    // ── Real Main page ────────────────────────────────────────────────────────
+    {
+        const juce::var pageOscNode = findPage(skinJson, "pageOsc");
+        const juce::Image oscBg = loadPng(BinaryData::xtPageOsc_png, BinaryData::xtPageOsc_pngSize);
+        pageContainer.addPage(PageId::Main, std::make_unique<PageComponent>(
+            proc.getController(), paramRegistry, pageOscNode, oscBg, skinImages));
+    }
+
+    // ── Background-only placeholders (empty page node → bg paint, no widgets) ──
+    auto addPlaceholder = [&](PageId id, const char* png, int pngSize) {
+        const juce::Image bg = loadPng(png, pngSize);
+        pageContainer.addPage(id, std::make_unique<PageComponent>(
+            proc.getController(), paramRegistry, juce::var(), bg, skinImages));
+    };
+    addPlaceholder(PageId::Mod,          BinaryData::xtPageMod_png,          BinaryData::xtPageMod_pngSize);
+    addPlaceholder(PageId::Arp,          BinaryData::xtPageArp_png,          BinaryData::xtPageArp_pngSize);
+    addPlaceholder(PageId::Multi,        BinaryData::xtPageMulti_png,        BinaryData::xtPageMulti_pngSize);
+    addPlaceholder(PageId::Wave,         BinaryData::xtPageWave_png,         BinaryData::xtPageWave_pngSize);
+    addPlaceholder(PageId::PatchManager, BinaryData::xtPagePatchManager_png, BinaryData::xtPagePatchManager_pngSize);
+
+    addAndMakeVisible(pageContainer);
+    pageContainer.showPage(PageId::Main);
+
+    // ── Page buttons (radio group) ────────────────────────────────────────────
+    // Display coords = skin coords * 0.5 (read from xtDefault.json).
+    std::vector<PageButtonBar::ButtonDef> btnDefs {
+        { PageId::Main,         { 1228, 35, 64, 64 }, true  },
+        { PageId::Mod,          { 1305, 35, 64, 64 }, true  },
+        { PageId::Arp,          { 1382, 35, 64, 64 }, true  },
+        { PageId::Multi,        { 1458, 35, 64, 64 }, true  },
+        { PageId::PatchManager, { 1611, 35, 64, 64 }, false }, // M2 — disabled
+    };
+    pageButtons = std::make_unique<PageButtonBar>(skinImages.buttonSheet, std::move(btnDefs));
+    pageButtons->onPageSelected = [this](PageId id) { pageContainer.showPage(id); };
+    addAndMakeVisible(*pageButtons);
 
     // ── Connection bar ────────────────────────────────────────────────────────
     populateMidiDeviceList();
@@ -205,9 +242,10 @@ void EditorComponent::resized()
     statusLabel.setBounds(x, 4, 200, 24);       x += 204;
     modeLabel.setBounds(x, 4, 60, 24);
 
-    // pageOsc: skin image x=36, y=489, w=3322.7, h=1479.8 at scale=0.5
-    if (pageOsc)
-        pageOsc->setBounds(18, 244, 1661, 740);
+    // Page area: skin image x=36, y=489, w=3322.7, h=1479.8 at scale=0.5
+    pageContainer.setBounds(18, 244, 1661, 740);
+    if (pageButtons)
+        pageButtons->setBounds(getLocalBounds());   // overlay; buttons at baked coords
 }
 
 // ── Paint ─────────────────────────────────────────────────────────────────────
