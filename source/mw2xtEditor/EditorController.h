@@ -29,6 +29,12 @@ public:
     // Request the XT edit buffer (SNDR BB=0x20 NN=0x00).
     void requestCurrentPatch();
 
+    // Send MODR; result fires onModeChanged(isMidi=false→Single, true→Multi).
+    void queryMode();
+
+    // Fires on the message thread when MODD arrives.  0=Single, 1=Multi.
+    std::function<void(uint8_t)> onModeChanged;
+
 private:
     PatchModel         model;
     HardwareMidiDevice device;

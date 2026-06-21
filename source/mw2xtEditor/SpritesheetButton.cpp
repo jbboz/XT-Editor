@@ -6,8 +6,9 @@ SpritesheetButton::SpritesheetButton(juce::Image s, int fc)
     : sheet(std::move(s)), frameCount(fc) {}
 
 void SpritesheetButton::setToggleState(bool on, bool sendCallback) {
+    if (on != toggled)
+        repaint();
     toggled = on;
-    repaint();
     if (sendCallback && onToggled)
         onToggled(toggled);
 }
@@ -25,6 +26,8 @@ void SpritesheetButton::paint(juce::Graphics& g) {
 }
 
 void SpritesheetButton::mouseDown(const juce::MouseEvent&) {
+    if (onGestureStarted)
+        onGestureStarted();
     setToggleState(!toggled, true);
 }
 

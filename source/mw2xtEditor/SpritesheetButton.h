@@ -14,6 +14,9 @@ public:
     void setToggleState(bool on, bool sendCallback = false);
     bool getToggleState() const noexcept { return toggled; }
 
+    // Called at mouseDown before the toggle fires.  Wire to
+    // UndoManager::beginNewTransaction() so each click is one undo step.
+    std::function<void()>     onGestureStarted;
     std::function<void(bool)> onToggled;
 
     void paint(juce::Graphics&) override;

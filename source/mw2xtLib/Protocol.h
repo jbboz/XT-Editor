@@ -37,11 +37,16 @@ constexpr uint8_t kIdmRmtp = 0x26;  // Remote Control Parameter Change
 constexpr uint8_t kIdmModr = 0x07;  // Mode Request
 constexpr uint8_t kIdmModd = 0x17;  // Mode Dump
 
-// Sound dump locations (BB byte in SNDR / SNDD)
+// Sound dump locations (BB byte in SNDR / SNDD — NOT for SNDP)
 constexpr uint8_t kLocSoundBankA         = 0x00;
 constexpr uint8_t kLocSoundBankB         = 0x01;
 constexpr uint8_t kLocAllSounds          = 0x10;
-constexpr uint8_t kLocSoundEditBufSingle = 0x20;
+constexpr uint8_t kLocSoundEditBufSingle = 0x20;  // Use in SNDR/SNDD only
+
+// SNDP LL byte — the buffer encoding for SNDP is independent of SNDR/SNDD's BB field.
+// LL=00h = Sound Mode edit buffer; LL=01h–07h = Multi Mode instruments 1–8.
+// D-03 hardware test confirmed LL=00h works; kLocSoundEditBufSingle (0x20) is WRONG here.
+constexpr uint8_t kLocSndpSoundMode = 0x00;
 
 // Fixed frame sizes
 constexpr size_t kSndpFrameSize = 10;

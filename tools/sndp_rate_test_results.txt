@@ -1,0 +1,47 @@
+SNDP Rate Test — 2026-06-19 11:27:09
+
+Device ID: 0
+
+Parameter: Filter1 Cutoff (SDATA 62)
+ interval_ms   steps    sent      result
+         200      64      64  expected_final=0  obs=ok
+         100      64      64  expected_final=0  obs=ok
+          50      64      64  expected_final=0  obs=ok
+          20      64      64  expected_final=0  obs=ok
+          10      64      64  expected_final=0  obs=ok
+           5      64      64  expected_final=0  obs=ok
+           2      64      64  expected_final=0  obs=ok
+           1      64      64  expected_final=0  obs=ok
+
+Parameter: Filter1 Reson (SDATA 63)
+ interval_ms   steps    sent      result
+         200      64      64  expected_final=0  obs=ok
+         100      64      64  expected_final=0  obs=ok
+          50      64      64  expected_final=0  obs=ok
+          20      64      64  expected_final=0  obs=ok
+          10      64      64  expected_final=0  obs=ok
+           5      64      64  expected_final=0  obs=ok
+           2      64      64  expected_final=0  obs=ok
+           1      64      64  expected_final=0  obs=ok
+
+Parameter: Osc1 Detune (SDATA 3)
+ interval_ms   steps    sent      result
+         200      64      64  expected_final=0  obs=ok
+         100      64      64  expected_final=0  obs=ok
+          50      64      64  expected_final=0  obs=ok
+          20      64      64  expected_final=0  obs=ok
+          10      64      64  expected_final=0  obs=ok
+           5      64      64  expected_final=0  obs=ok
+           2      64      64  expected_final=0  obs=ok
+           1      64      64  expected_final=0  obs=ok
+
+Parameter: Wavetable (SDATA 25)
+ interval_ms   steps    sent      result
+         200      64      64  expected_final=0  obs=ok
+         100      64      64  expected_final=0  obs=ok
+          50      64      64  expected_final=0  obs=ok
+          20      64      64  expected_final=0  obs=ok
+          10      64      64  expected_final=0  obs=drop
+           5      64      64  expected_final=0  obs=drop
+           2      64      64  expected_final=0  obs=drop
+           1      64      64  expected_final=0  obs=drop

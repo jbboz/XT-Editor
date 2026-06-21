@@ -10,7 +10,7 @@ EditorController::EditorController() {
 void EditorController::wireMidiCallbacks() {
     model.onSoundParamChanged = [this](int index, uint8_t value) {
         if (device.isOpen())
-            device.sendSndp(kLocSoundEditBufSingle, index, value);
+            device.sendSndp(kLocSndpSoundMode, index, value);
     };
 
     device.onSoundDump([this](const SoundData& sd, uint8_t, uint8_t) {
@@ -27,6 +27,11 @@ void EditorController::wireMidiCallbacks() {
 
     device.onCc([this](int cc, int value, int channel) {
         routeCC(cc, value, channel);
+    });
+
+    device.onModeDump([this](uint8_t mode) {
+        if (onModeChanged)
+            onModeChanged(mode);
     });
 }
 
@@ -53,6 +58,11 @@ void EditorController::swapAB() {
 void EditorController::requestCurrentPatch() {
     if (device.isOpen())
         device.sendSndr(kLocSoundEditBufSingle, 0x00);
+}
+
+void EditorController::queryMode() {
+    if (device.isOpen())
+        device.sendModr();
 }
 
 void EditorController::routeCC(int cc, int value, int /*channel*/) {

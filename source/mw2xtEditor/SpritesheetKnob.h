@@ -14,6 +14,9 @@ public:
     void   setNormalized(double v, bool sendCallback = false);
     double getNormalized() const noexcept { return value; }
 
+    // Called at mouseDown, before the first mouseDrag.  Wire to
+    // UndoManager::beginNewTransaction() so each drag is one undo step.
+    std::function<void()>      onGestureStarted;
     std::function<void(double)> onValueChanged;
 
     void paint(juce::Graphics&) override;

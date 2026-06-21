@@ -18,12 +18,29 @@ public:
     void resized() override;
 
 private:
-    EditorProcessor& proc;
+    // ── Connection bar ────────────────────────────────────────────────────────
+    // Single "XT Port" selector — same name used for both MIDI output and input.
+    // This eliminates the common mistake of setting output and input to different ports.
+    juce::ComboBox   midiPortSelector;
+    juce::TextButton connectBtn      { "Connect" };
+    juce::TextButton requestPatchBtn { "Req Patch" };
+    juce::TextButton undoBtn         { "Undo" };
+    juce::TextButton redoBtn         { "Redo" };
+    juce::TextButton swapABBtn       { "A \xe2\x86\x94 B" };  // A ↔ B
+    juce::TextButton pushPatchBtn    { "Push Patch" };
+    juce::Label      statusLabel;
+    juce::Label      modeLabel;
 
+    void populateMidiDeviceList();
+    void updateConnectButton();
+    void onConnectClicked();
+    void onModeReceived(uint8_t mode);
+
+    // ── Skin / page ───────────────────────────────────────────────────────────
+    EditorProcessor& proc;
     juce::Image      rootBG;
     ParamRegistry    paramRegistry;
     PageComponent::SkinImages skinImages;
-
     std::unique_ptr<PageComponent> pageOsc;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EditorComponent)

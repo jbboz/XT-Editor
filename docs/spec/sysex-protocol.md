@@ -941,9 +941,9 @@ These are catalogued because they will bite anyone reading the Waldorf PDF direc
 
 ### SNDP/MULP/GLBP rate limiting
 
-Hardware test result (2026-06-19, real XT): normal continuous parameters (Filter Cutoff, Resonance, Osc Detune) showed no dropped messages at 20 ms intervals or slower. At faster rates the changes blended aurally and visually, but no clear drops. The **Wave parameter** (SDATA 14) showed visible drops at fast rates, consistent with gearmulator's BUG-10134 fix which applies 100 ms rate limiting to Wave only. MonstrumWaveXT uses `panelMidiGlobalDelay = 0` (no rate limiting at all) and works reliably in production, confirming that a blanket rate limiter is not needed.
+Hardware test result (2026-06-19, real XT): normal continuous parameters (Filter Cutoff, Resonance, Osc Detune) showed no dropped messages at 20 ms intervals or slower. At faster rates the changes blended aurally and visually, but no clear drops. The **Wave parameter** (SDATA **25**) showed visible drops at fast rates, consistent with gearmulator's BUG-10134 fix which applies 100 ms rate limiting to Wave only. MonstrumWaveXT uses `panelMidiGlobalDelay = 0` (no rate limiting at all) and works reliably in production, confirming that a blanket rate limiter is not needed.
 
-**Rate limiting applies only to the Wave parameter (SDATA 14).** All other SNDP, MULP, and GLBP sends go out immediately.
+**Rate limiting applies only to the Wave parameter (SDATA 25).** All other SNDP, MULP, and GLBP sends go out immediately.
 
 Implementation for Wave:
 

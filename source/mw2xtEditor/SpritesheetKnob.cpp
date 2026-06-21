@@ -9,8 +9,12 @@ SpritesheetKnob::SpritesheetKnob(juce::Image s, int fc)
 }
 
 void SpritesheetKnob::setNormalized(double v, bool sendCallback) {
-    value = juce::jlimit(0.0, 1.0, v);
-    repaint();
+    const double clamped = juce::jlimit(0.0, 1.0, v);
+    const int oldFrame = juce::roundToInt(value   * static_cast<double>(frameCount - 1));
+    const int newFrame = juce::roundToInt(clamped * static_cast<double>(frameCount - 1));
+    value = clamped;
+    if (newFrame != oldFrame)
+        repaint();
     if (sendCallback && onValueChanged)
         onValueChanged(value);
 }
@@ -29,6 +33,8 @@ void SpritesheetKnob::paint(juce::Graphics& g) {
 }
 
 void SpritesheetKnob::mouseDown(const juce::MouseEvent& e) {
+    if (onGestureStarted)
+        onGestureStarted();
     mouseDownY = e.getScreenY();
 }
 

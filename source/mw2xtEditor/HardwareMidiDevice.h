@@ -52,7 +52,7 @@ public:
 
     // ── Outbound sends ────────────────────────────────────────────────────────
 
-    // SNDP: Wave parameter (SDATA 14) is throttled to 100 ms (NFR-2); all
+    // SNDP: Wave parameter (SDATA 25) is throttled to 100 ms (NFR-2); all
     // others send immediately. Call from the message thread only.
     void sendSndp(uint8_t buffer, int paramIndex, uint8_t value);
 
@@ -100,11 +100,13 @@ private:
 
     std::unique_ptr<juce::MidiOutput> midiOut;
     std::unique_ptr<juce::MidiInput>  midiIn;
+    // Device ID 0x00 = default factory setting; matches this user's XT.
+    // autodetect() can update this if the XT has a non-zero Device ID.
     uint8_t deviceId { 0x00 };
 
-    // Wave parameter throttle (SDATA 14 / NFR-2).
+    // Wave parameter throttle (SDATA 25 / NFR-2).
     // State accessed only on the message thread (sendSndp + timerCallback).
-    static constexpr int kWaveParamIndex = 14;
+    static constexpr int kWaveParamIndex = 25;
     static constexpr int kWaveThrottleMs = 100;
     bool        waveHasPending    { false };
     uint8_t     wavePendingBuffer { 0 };

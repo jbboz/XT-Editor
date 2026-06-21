@@ -107,6 +107,9 @@ void PageComponent::buildWidgets(const juce::var&     pageNode,
             WidgetEntry e;
             e.type      = WidgetEntry::Knob;
             e.component = knob;
+            knob->onGestureStarted = [this]() {
+                controller.getModel().getUndoManager().beginNewTransaction();
+            };
             if (info) {
                 e.sdataIndex = info->sdataIndex;
                 e.minVal     = info->minVal;
@@ -155,6 +158,9 @@ void PageComponent::buildWidgets(const juce::var&     pageNode,
                 e.minVal     = info->minVal;
                 e.maxVal     = info->maxVal;
                 if (isToggle) {
+                    btn->onGestureStarted = [this]() {
+                        controller.getModel().getUndoManager().beginNewTransaction();
+                    };
                     const int sdataIdx = info->sdataIndex;
                     btn->onToggled = [this, sdataIdx](bool on) {
                         controller.setSoundParam(sdataIdx, on ? 1u : 0u);
@@ -189,6 +195,7 @@ void PageComponent::buildWidgets(const juce::var&     pageNode,
                 const int            sdataIdx  = info->sdataIndex;
                 const std::vector<int> itemVals = info->itemParamValues;
                 combo->onChange = [this, combo, sdataIdx, itemVals]() {
+                    controller.getModel().getUndoManager().beginNewTransaction();
                     const int idx = combo->getSelectedItemIndex();
                     if (idx >= 0 && idx < static_cast<int>(itemVals.size()))
                         controller.setSoundParam(sdataIdx,
