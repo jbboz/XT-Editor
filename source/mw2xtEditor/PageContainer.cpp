@@ -12,6 +12,7 @@ void PageContainer::addPage(PageId id, std::unique_ptr<juce::Component> page) {
 }
 
 void PageContainer::showPage(PageId id) {
+    jassert(hasPage(id));   // every shown page must have been added first
     current = id;
     for (auto& s : slots)
         s.page->setVisible(s.id == id);
