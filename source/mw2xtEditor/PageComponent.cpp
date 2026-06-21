@@ -62,6 +62,9 @@ void PageComponent::refreshFromModel() {
                 }
                 c->setSelectedId(id, juce::dontSendNotification);
             }
+        } else if (e.type == WidgetEntry::Conditional) {
+            if (auto* ci = static_cast<ConditionalImage*>(e.component))
+                ci->refreshFromValue(raw);
         }
     }
 }
@@ -204,8 +207,37 @@ void PageComponent::buildWidgets(const juce::var&     pageNode,
             }
             entries.push_back(std::move(e));
         }
-        // ── Conditional image overlay — skip for M1.5 ─────────────────────────
-        // else if (child.hasProperty("image") && child.hasProperty("condition")) { ... }
+        // ── Conditional image overlay (e.g. F1Type filter icon) ───────────────
+        else if (child.hasProperty("image") && child.hasProperty("condition")) {
+            const auto& img  = child["image"];
+            const auto& cond = child["condition"];
+            const ParamInfo* condInfo =
+                reg.getInfo(cond["enableOnParameter"].toString());
+            if (!condInfo)
+                continue;
+
+            const juce::String tex = img["texture"].toString();
+            const auto it = skins.namedImages.find(tex);
+            if (it == skins.namedImages.end())
+                continue;
+
+            const int x = juce::roundToInt(skinToDisplay(img["x"]));
+            const int y = juce::roundToInt(skinToDisplay(img["y"]));
+            const int w = juce::roundToInt(skinToDisplay(img["width"]));
+            const int h = juce::roundToInt(skinToDisplay(img["height"]));
+
+            auto values = parseEnableValues(cond["enableOnValues"].toString());
+            auto* ci = conditionals.add(std::make_unique<ConditionalImage>(
+                it->second, condInfo->sdataIndex, std::move(values)));
+            ci->setBounds(x, y, w, h);
+            addAndMakeVisible(ci);
+
+            WidgetEntry e;
+            e.type       = WidgetEntry::Conditional;
+            e.sdataIndex = condInfo->sdataIndex;
+            e.component  = ci;
+            entries.push_back(std::move(e));
+        }
     }
 }
 

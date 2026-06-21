@@ -41,6 +41,12 @@ juce_add_binary_data(mw2xtSkinData
         source/mw2xtUI/skins/xtDefault/xtknob.png
         source/mw2xtUI/skins/xtDefault/xtknob_small.png
         source/mw2xtUI/skins/xtDefault/led.png
+        source/mw2xtUI/skins/xtDefault/f1TypeUnused.png
+        source/mw2xtUI/skins/xtDefault/f1Type6.png
+        source/mw2xtUI/skins/xtDefault/f1Type7.png
+        source/mw2xtUI/skins/xtDefault/f1Type8.png
+        source/mw2xtUI/skins/xtDefault/f1Type9.png
+        source/mw2xtUI/skins/xtDefault/f1Type12.png
 )
 
 juce_add_plugin(mw2xtEditor
@@ -76,6 +82,8 @@ target_sources(mw2xtEditor PRIVATE
     source/mw2xtEditor/SpritesheetKnob.h
     source/mw2xtEditor/SpritesheetButton.cpp
     source/mw2xtEditor/SpritesheetButton.h
+    source/mw2xtEditor/ConditionalImage.cpp
+    source/mw2xtEditor/ConditionalImage.h
     source/mw2xtEditor/PageComponent.cpp
     source/mw2xtEditor/PageComponent.h
     source/mw2xtUI/ParamRegistry.cpp

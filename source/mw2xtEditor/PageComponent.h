@@ -1,9 +1,11 @@
 #pragma once
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <vector>
+#include <map>
 #include "SpritesheetKnob.h"
 #include "SpritesheetButton.h"
 #include "../mw2xtUI/ParamRegistry.h"
+#include "ConditionalImage.h"
 
 namespace mw2xt {
 
@@ -19,6 +21,7 @@ public:
         juce::Image buttonSheet;       // xtknob.png               (128×256,   2 frames)
         juce::Image buttonSmallSheet;  // xtknob_small.png         (64×128,    2 frames)
         juce::Image ledSheet;          // led.png                  (128×256,   2 frames)
+        std::map<juce::String, juce::Image> namedImages; // keyed by skin texture name
     };
 
     PageComponent(EditorController&    ctrl,
@@ -36,7 +39,7 @@ public:
 
 private:
     struct WidgetEntry {
-        enum Type { Knob, Button, Combo } type = Knob;
+        enum Type { Knob, Button, Combo, Conditional } type = Knob;
         int              sdataIndex  = -1;
         int              minVal      = 0;
         int              maxVal      = 127;
@@ -50,6 +53,7 @@ private:
     juce::OwnedArray<SpritesheetKnob>   knobs;
     juce::OwnedArray<SpritesheetButton> buttons;
     juce::OwnedArray<juce::ComboBox>    combos;
+    juce::OwnedArray<ConditionalImage>  conditionals;
 
     void buildWidgets(const juce::var&     pageNode,
                       const ParamRegistry& reg,
