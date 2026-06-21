@@ -44,7 +44,7 @@ private:
         int              minVal      = 0;
         int              maxVal      = 127;
         std::vector<int> itemValues; // combo only: itemValues[i] = raw param value
-        juce::Component* component  = nullptr; // raw ptr, owned by knobs/buttons/combos
+        juce::Component* component  = nullptr; // raw ptr, owned by knobs/buttons/combos/conditionals
     };
 
     EditorController&              controller;

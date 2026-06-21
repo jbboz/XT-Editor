@@ -83,7 +83,6 @@ target_sources(mw2xtEditor PRIVATE
     source/mw2xtEditor/SpritesheetButton.cpp
     source/mw2xtEditor/SpritesheetButton.h
     source/mw2xtEditor/ConditionalImage.cpp
-    source/mw2xtEditor/ConditionalImage.h
     source/mw2xtEditor/PageComponent.cpp
     source/mw2xtEditor/PageComponent.h
     source/mw2xtUI/ParamRegistry.cpp
