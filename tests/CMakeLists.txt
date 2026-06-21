@@ -24,3 +24,19 @@ target_link_libraries(test_patch_model PRIVATE
     juce::juce_recommended_config_flags
 )
 add_test(NAME PatchModelTests COMMAND test_patch_model)
+
+juce_add_console_app(test_conditional_image PRODUCT_NAME "ConditionalImage Tests")
+target_sources(test_conditional_image PRIVATE
+    test_conditional_image.cpp
+    ../source/mw2xtEditor/ConditionalImage.cpp
+)
+target_include_directories(test_conditional_image PRIVATE
+    ${CMAKE_SOURCE_DIR}/source
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(test_conditional_image PRIVATE
+    juce::juce_gui_basics
+    juce::juce_recommended_warning_flags
+    juce::juce_recommended_config_flags
+)
+add_test(NAME ConditionalImageTests COMMAND test_conditional_image)
