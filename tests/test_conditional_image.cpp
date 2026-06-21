@@ -46,6 +46,18 @@ int main() {
     r.add("parseEnableValues: empty string", []() {
         EXPECT(mw2xt::parseEnableValues("").empty());
     });
+    r.add("parseEnableValues: comma-separated (real skin format)", []() {
+        const auto v = mw2xt::parseEnableValues("0,1,2,3,4,5,10,11");
+        EXPECT_EQ(v.size(), (size_t) 8);
+        EXPECT_EQ(v[0], 0);
+        EXPECT_EQ(v[6], 10);
+        EXPECT_EQ(v[7], 11);
+    });
+    r.add("parseEnableValues: mixed comma values", []() {
+        const auto v = mw2xt::parseEnableValues("6,8,9,12");
+        EXPECT_EQ(v.size(), (size_t) 4);
+        EXPECT_EQ(v[3], 12);
+    });
 
     return r.run();
 }

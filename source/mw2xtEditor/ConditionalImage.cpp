@@ -24,7 +24,7 @@ void ConditionalImage::paint(juce::Graphics& g) {
 std::vector<int> parseEnableValues(const juce::String& s) {
     std::vector<int> out;
     juce::StringArray toks;
-    toks.addTokens(s, " ", "");
+    toks.addTokens(s, " ,", "");
     for (const auto& t : toks) {
         const auto trimmed = t.trim();
         if (trimmed.isNotEmpty())

@@ -23,7 +23,8 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ConditionalImage)
 };
 
-// Parse a skin `enableOnValues` string ("6" or "6 7 8") into raw int values.
+// Parse a skin `enableOnValues` string into raw int values. Tokens may be
+// separated by spaces and/or commas, e.g. "6", "6 7 8", or "0,1,2,10,11".
 std::vector<int> parseEnableValues(const juce::String& spaceSeparated);
 
 } // namespace mw2xt
