@@ -56,3 +56,20 @@ target_link_libraries(test_page_container PRIVATE
     juce::juce_recommended_config_flags
 )
 add_test(NAME PageContainerTests COMMAND test_page_container)
+
+juce_add_console_app(test_page_button_bar PRODUCT_NAME "PageButtonBar Tests")
+target_sources(test_page_button_bar PRIVATE
+    test_page_button_bar.cpp
+    ../source/mw2xtEditor/PageButtonBar.cpp
+    ../source/mw2xtEditor/SpritesheetButton.cpp
+)
+target_include_directories(test_page_button_bar PRIVATE
+    ${CMAKE_SOURCE_DIR}/source
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(test_page_button_bar PRIVATE
+    juce::juce_gui_basics
+    juce::juce_recommended_warning_flags
+    juce::juce_recommended_config_flags
+)
+add_test(NAME PageButtonBarTests COMMAND test_page_button_bar)
