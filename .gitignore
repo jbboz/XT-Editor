@@ -5,6 +5,9 @@ references/edisyn/
 references/mwsd/
 references/MidiKraft-librarian/
 
+# Local gearmulator source snapshot for the Xenia hardware-bridge work — large, not redistributed.
+resources/
+
 # Waldorf reference PDFs and derived text — kept locally only, NOT redistributed.
 # See docs/spec/README.md for the public Waldorf download URL.
 docs/spec/*.pdf
