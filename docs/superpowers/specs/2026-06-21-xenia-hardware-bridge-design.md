@@ -148,9 +148,35 @@ AGPL-3.0 is moot — we are no longer shipping a separate editor.)
   **transfers directly** into the bridge's throttle and message-build paths; the UI
   reimplementation (PageComponent/EditorComponent) does not carry over.
 - **Branch `m1.6a-page-switch`** is left unmerged; no new editor-UI milestones are started.
-- A new milestone track (XHB-x) replaces ROADMAP Phase 1+. First milestones derived in the
-  implementation plan: a vertical slice = one param round-trips Xenia ↔ real XT through the
-  bridge with correct throttle and no echo.
+- A new milestone track (**XHB-x**) replaces ROADMAP Phase 1+ (see §8.1).
+
+## 8.1 Milestone track & effort estimate
+
+Sessions are rough sizing (one focused block ≈ a task with TDD + review, the M1.6a
+cadence), **not commitments**. Software estimates are unreliable; **XHB-C is the estimate
+checkpoint** — once one parameter round-trips cleanly on real hardware, the per-message cost
+is known and the remainder tightens to ±20%. Re-estimate then.
+
+| ID | Milestone | Effort | Sessions | Gate? |
+|---|---|---|---|---|
+| XHB-A | Build env: gearmulator + Xenia building/debuggable; resolve OQ-2 (submodule vs fork vs build) | M | 1–2 | |
+| XHB-B | Runtime seam confirmation (`MidiPorts`, `sendParameterChange`, `Origin`, `onStateLoaded`) | S | 1 | |
+| XHB-C | **Vertical slice:** one param Xenia→XT, throttled, `Origin`-gated, no echo, on real XT | M | 2–3 | **gate** |
+| XHB-D | Full bidirectional: inbound parse + apply as `Origin::Midi`; multi-mode part routing (MIR.002) | M | 2 | |
+| XHB-E | XT-aware throttle + parameter thinning; re-validate D-03 pacing on real XT (OQ-3) | M | 1–2 | |
+| XHB-F | Total recall (REC.001/002): single + Multi (MULD + per-part SNDD); resolve OQ-4 | L | 2–3 | |
+| XHB-G | Live bank dump/restore to/from the metal (SNDR→SNDD state machine) | L | 2–3 | |
+| XHB-H | Creative tools: morph / nudge (extend upstream randomize) | M | 1–2 | |
+| XHB-I | Settings toggle, polish, upstream-prep (clang-format/conventions, docs) | M | 1–2 | |
+
+**Headline:** bidirectional MVP (A–E) **≈ 7–10 sessions**; complete bridge (A–I)
+**≈ 13–20 sessions**. Anchor on **MVP ≈ 8, full ≈ 15** until XHB-C lands.
+
+**Swing factors (any one can add several sessions):** first-time gearmulator build pain
+(DSP56300 JIT, RmlUi, many deps — most likely overrun); real-hardware wire-format/timing
+debugging (cf. SNDP encoding, 14-byte UDI); XHB-F (Multi recall) and XHB-G (bank transfer)
+are the meatiest/fiddliest; upstream structure decision (OQ-2) may force rework; the
+no-subagents spend constraint slows individual sessions.
 
 ## 9. Open questions / risks
 
